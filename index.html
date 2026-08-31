@@ -1,0 +1,1617 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>风格库管理 Demo</title>
+  <style>
+    * { box-sizing: border-box; }
+    :root {
+      --bg: #f6f7f9;
+      --panel: #ffffff;
+      --text: #202226;
+      --muted: #747983;
+      --line: #e7e9ed;
+      --primary: #5b5ce2;
+      --primary-soft: #eeeeff;
+      --success: #16885d;
+      --success-soft: #eaf8f2;
+      --warning: #a96508;
+      --warning-soft: #fff5df;
+      --info: #2e6ecf;
+      --info-soft: #eaf2ff;
+      --danger: #c23f4d;
+      --shadow: 0 12px 36px rgba(33, 37, 45, .12);
+    }
+    html, body { margin: 0; min-height: 100%; font-family: Inter, "PingFang SC", "Microsoft YaHei", sans-serif; color: var(--text); background: var(--bg); }
+    button, input, select { font: inherit; }
+    button { cursor: pointer; }
+    .app { min-height: 100vh; display: grid; grid-template-columns: 224px 1fr; }
+    .sidebar { background: #191b21; color: #cdd0d8; padding: 18px 14px; display: flex; flex-direction: column; position: sticky; top: 0; height: 100vh; }
+    .brand { height: 46px; display: flex; align-items: center; gap: 10px; padding: 0 10px 16px; color: white; font-weight: 650; letter-spacing: .2px; }
+    .brand-mark { width: 28px; height: 28px; border-radius: 8px; background: linear-gradient(145deg, #8c72ff, #5254dd 58%, #35b7cb); position: relative; box-shadow: inset 0 0 0 1px rgba(255,255,255,.18); }
+    .brand-mark::after { content: ""; position: absolute; width: 9px; height: 9px; border-radius: 3px; background: white; right: 5px; top: 5px; opacity: .9; }
+    .workspace-switch { border: 1px solid #33363f; background: #23262e; color: white; border-radius: 9px; padding: 10px 11px; display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px; }
+    .workspace-switch small { display: block; color: #8f94a0; margin-bottom: 2px; }
+    .nav-section { margin: 15px 10px 7px; color: #737985; font-size: 12px; }
+    .nav-item { width: 100%; border: 0; background: transparent; color: inherit; display: flex; align-items: center; gap: 11px; padding: 10px 11px; border-radius: 8px; text-align: left; margin: 2px 0; }
+    .nav-item:hover { background: #24272f; color: white; }
+    .nav-item.active { color: white; background: #30323b; }
+    .nav-icon { width: 18px; text-align: center; opacity: .9; }
+    .sidebar-bottom { margin-top: auto; }
+    .user-mini { border-top: 1px solid #30333b; margin-top: 12px; padding: 16px 9px 3px; display: flex; align-items: center; gap: 9px; }
+    .avatar { width: 30px; height: 30px; border-radius: 50%; display: grid; place-items: center; background: #fde6cc; color: #955313; font-size: 12px; font-weight: 650; }
+    .user-mini small { display: block; color: #777d89; margin-top: 2px; }
+    .main { min-width: 0; }
+    .topbar { height: 64px; background: rgba(255,255,255,.94); border-bottom: 1px solid var(--line); display: flex; align-items: center; justify-content: space-between; padding: 0 28px; position: sticky; top: 0; z-index: 10; backdrop-filter: blur(8px); }
+    .breadcrumb { color: var(--muted); font-size: 14px; }
+    .breadcrumb b { color: var(--text); font-weight: 550; }
+    .top-actions { display: flex; align-items: center; gap: 10px; }
+    .icon-btn { width: 34px; height: 34px; border: 1px solid var(--line); border-radius: 8px; background: white; color: #565b65; }
+    .content { padding: 30px 32px 50px; max-width: 1500px; margin: 0 auto; }
+    .page-heading { display: flex; align-items: flex-start; justify-content: space-between; gap: 24px; }
+    h1 { font-size: 26px; line-height: 1.25; margin: 0 0 7px; font-weight: 650; }
+    .subtitle { color: var(--muted); font-size: 14px; margin: 0; }
+    .heading-actions { display: flex; gap: 10px; }
+    .btn { height: 38px; border: 1px solid var(--line); border-radius: 8px; padding: 0 15px; background: white; color: #343841; display: inline-flex; align-items: center; justify-content: center; gap: 7px; }
+    .btn:hover { border-color: #c9ccd4; background: #fafafa; }
+    .btn.primary { background: var(--primary); border-color: var(--primary); color: white; }
+    .btn.primary:hover { background: #4e4fd0; }
+    .summary { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); background: white; border: 1px solid var(--line); border-radius: 12px; margin-top: 24px; }
+    .summary-item { padding: 18px 20px; position: relative; }
+    .summary-item:not(:last-child)::after { content: ""; position: absolute; width: 1px; height: 34px; background: var(--line); right: 0; top: 21px; }
+    .summary-label { color: var(--muted); font-size: 13px; margin-bottom: 7px; }
+    .summary-value { font-size: 22px; font-weight: 650; }
+    .summary-note { color: var(--muted); font-size: 12px; margin-left: 6px; font-weight: 400; }
+    .library-panel { margin-top: 24px; }
+    .tabs { display: flex; gap: 4px; border-bottom: 1px solid var(--line); }
+    .tab { border: 0; background: transparent; color: #656a74; padding: 11px 14px 12px; position: relative; }
+    .tab.active { color: var(--text); font-weight: 550; }
+    .tab.active::after { content: ""; position: absolute; height: 2px; left: 12px; right: 12px; bottom: -1px; background: var(--primary); border-radius: 2px; }
+    .tab-count { background: #eceef2; color: #777c86; border-radius: 10px; padding: 1px 6px; font-size: 11px; margin-left: 5px; }
+    .toolbar { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 18px 0; }
+    .filters { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+    .search { width: 280px; height: 38px; border: 1px solid var(--line); border-radius: 8px; background: white; display: flex; align-items: center; padding: 0 11px; gap: 8px; color: #858a93; }
+    .search input { border: 0; outline: 0; background: transparent; min-width: 0; width: 100%; color: var(--text); }
+    .select { height: 38px; border: 1px solid var(--line); background: white; border-radius: 8px; padding: 0 30px 0 11px; color: #4b5059; }
+    .view-toggle { display: flex; background: #eceef2; border-radius: 8px; padding: 3px; }
+    .view-toggle button { width: 32px; height: 30px; border: 0; border-radius: 6px; background: transparent; color: #767b85; }
+    .view-toggle button.active { background: white; color: var(--text); box-shadow: 0 1px 4px rgba(0,0,0,.08); }
+    .grid { display: grid; grid-template-columns: repeat(4, minmax(210px, 1fr)); gap: 16px; }
+    .style-card { background: white; border: 1px solid var(--line); border-radius: 11px; overflow: hidden; transition: transform .16s ease, box-shadow .16s ease, border-color .16s ease; cursor: pointer; }
+    .style-card:hover { transform: translateY(-2px); border-color: #d4d6dd; box-shadow: 0 8px 24px rgba(35, 39, 47, .08); }
+    .cover { height: 158px; display: grid; grid-template-columns: 1.15fr .85fr; gap: 3px; background: #e9e9ec; position: relative; }
+    .cover-main, .cover-side > div { position: relative; overflow: hidden; }
+    .cover-side { display: grid; gap: 3px; grid-template-rows: 1fr 1fr; }
+    .art::before, .art::after { content: ""; position: absolute; }
+    .art-a { background: linear-gradient(155deg,#d9c2a3,#f2e9dc 46%,#687d62); }
+    .art-a::before { width: 48px; height: 95px; left: 31%; top: 28px; background: #432e25; border-radius: 45% 45% 30% 30%; transform: rotate(-7deg); box-shadow: 18px -13px 0 -4px #ead7bc; }
+    .art-a::after { width: 86px; height: 33px; background: rgba(255,250,240,.75); right: -20px; bottom: 16px; transform: rotate(-17deg); }
+    .art-b { background: linear-gradient(140deg,#1a3c65,#4774a0 46%,#eab76b); }
+    .art-b::before { width: 78px; height: 78px; border: 4px solid rgba(255,255,255,.7); border-radius: 50%; left: 18px; top: 20px; }
+    .art-b::after { width: 58px; height: 58px; background: #d85f47; right: -12px; bottom: -10px; transform: rotate(25deg); }
+    .art-c { background: linear-gradient(145deg,#d2c4ed,#fff0de 50%,#ee8e93); }
+    .art-c::before { width: 70px; height: 84px; background: #f7e6d5; border-radius: 50% 50% 42% 42%; left: calc(50% - 35px); top: 28px; box-shadow: 0 -17px 0 -2px #533f6f; }
+    .art-c::after { width: 95px; height: 44px; border-radius: 50%; background: rgba(255,255,255,.36); left: -18px; bottom: -12px; }
+    .art-d { background: linear-gradient(160deg,#f0ead5,#cbd2bd 55%,#31463d); }
+    .art-d::before { width: 95px; height: 62px; border-radius: 60% 45% 50% 40%; background: #6f8d72; left: 14px; bottom: 16px; transform: rotate(-12deg); box-shadow: 42px -36px 0 -25px #e6bb6a; }
+    .art-d::after { width: 2px; height: 90px; background: rgba(44,75,56,.5); right: 30px; top: 10px; transform: rotate(35deg); }
+    .art-e { background: linear-gradient(135deg,#fbefe2,#f0c7c8 52%,#904e62); }
+    .art-e::before { width: 92px; height: 92px; border-radius: 18px; background: rgba(255,255,255,.55); transform: rotate(24deg); left: 16px; top: 28px; }
+    .art-e::after { width: 42px; height: 70px; background: #a75a69; border-radius: 40% 40% 8px 8px; right: 22px; bottom: 18px; }
+    .art-f { background: linear-gradient(140deg,#0d1527,#342e60 55%,#cc5f89); }
+    .art-f::before { width: 54px; height: 54px; border: 2px solid #6fe1e0; left: 28px; top: 35px; transform: rotate(45deg); box-shadow: 26px -27px 0 -22px #f3cc70; }
+    .art-f::after { width: 110px; height: 2px; background: #e35f91; left: 0; bottom: 28px; transform: rotate(-12deg); box-shadow: 0 9px 0 #5dc5da; }
+    .art-g { background: linear-gradient(150deg,#c7d3e5,#f6f3eb 50%,#ad7d62); }
+    .art-g::before { width: 105px; height: 65px; background: #f4f0e7; border: 6px solid #7e8998; left: 15px; top: 38px; transform: perspective(120px) rotateX(5deg) rotateY(-12deg); }
+    .art-g::after { width: 36px; height: 72px; background: #8b604b; right: 18px; bottom: 10px; }
+    .art-h { background: linear-gradient(160deg,#18191b,#43413d 54%,#d8b965); }
+    .art-h::before { width: 90px; height: 90px; background: conic-gradient(from 15deg,#d4b25e,#4a4130,#f4e2a3,#6e5522,#d4b25e); border-radius: 50%; left: 20px; top: 25px; }
+    .art-h::after { width: 48px; height: 48px; background: #151515; border-radius: 50%; left: 41px; top: 46px; }
+    .card-menu { position: absolute; top: 9px; right: 9px; width: 28px; height: 28px; border: 0; background: rgba(23,25,30,.66); color: white; border-radius: 7px; opacity: 0; transition: opacity .15s; z-index: 2; }
+    .style-card:hover .card-menu { opacity: 1; }
+    .card-body { padding: 13px 14px 14px; }
+    .card-title-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+    .card-title { font-weight: 600; font-size: 15px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .status { flex: 0 0 auto; border-radius: 10px; padding: 3px 7px; font-size: 11px; }
+    .published { color: var(--success); background: var(--success-soft); }
+    .review { color: var(--warning); background: var(--warning-soft); }
+    .draft { color: #6d717a; background: #eff0f2; }
+    .training { color: var(--info); background: var(--info-soft); }
+    .card-desc { color: var(--muted); font-size: 12px; margin: 8px 0 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .card-meta { display: flex; justify-content: space-between; align-items: center; color: #8a8f98; font-size: 12px; }
+    .scope { display: inline-flex; align-items: center; gap: 5px; }
+    .list { display: none; background: white; border: 1px solid var(--line); border-radius: 10px; overflow: hidden; }
+    .list.visible { display: block; }
+    .grid.hidden { display: none; }
+    .list-row { display: grid; grid-template-columns: 2.2fr .8fr .8fr .8fr .7fr 34px; align-items: center; gap: 12px; padding: 13px 15px; border-bottom: 1px solid var(--line); }
+    .list-row:last-child { border-bottom: 0; }
+    .list-row.header { color: var(--muted); font-size: 12px; background: #fafafa; padding-top: 10px; padding-bottom: 10px; }
+    .list-name { display: flex; align-items: center; gap: 11px; min-width: 0; }
+    .thumb { width: 46px; height: 36px; border-radius: 6px; flex: 0 0 auto; position: relative; overflow: hidden; }
+    .list-name strong { display: block; font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .list-name small { color: var(--muted); }
+    .empty { display: none; background: white; border: 1px dashed #d5d8de; border-radius: 10px; text-align: center; padding: 70px 20px; color: var(--muted); }
+    .empty strong { color: var(--text); display: block; margin-bottom: 7px; }
+    .backdrop { position: fixed; inset: 0; background: rgba(16,18,23,.38); display: none; z-index: 50; }
+    .backdrop.open { display: block; }
+    .drawer { position: fixed; top: 0; right: 0; width: 560px; max-width: 92vw; height: 100vh; background: white; box-shadow: var(--shadow); z-index: 60; transform: translateX(102%); transition: transform .22s ease; overflow-y: auto; }
+    .drawer.open { transform: translateX(0); }
+    .drawer-head { height: 64px; border-bottom: 1px solid var(--line); padding: 0 22px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; background: white; z-index: 2; }
+    .drawer-head h2 { margin: 0; font-size: 17px; font-weight: 620; }
+    .close { border: 0; background: transparent; font-size: 22px; color: #727781; }
+    .drawer-body { padding: 22px; }
+    .detail-preview { position:relative; height:210px; border-radius:11px; overflow:hidden; display:block; }
+    .detail-title { display: flex; align-items: center; justify-content: space-between; margin-top: 18px; }
+    .detail-title h3 { margin: 0; font-size: 19px; }
+    .detail-actions { display: flex; gap: 8px; margin-top: 17px; }
+    .detail-actions .btn { flex: 1; }
+    .detail-metrics { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin-top:18px; }
+    .detail-metric { min-width:0; padding:13px 12px; border:1px solid var(--line); border-radius:8px; background:#15171b; }
+    .detail-metric span { display:block; margin-bottom:7px; color:var(--muted); font-size:11px; }
+    .detail-metric strong { display:block; color:#f1f4f8; font-size:18px; line-height:1; font-variant-numeric:tabular-nums; }
+    .section { border-top: 1px solid var(--line); margin-top: 22px; padding-top: 20px; }
+    .section h4 { margin: 0 0 14px; font-size: 14px; }
+    .kv { display: grid; grid-template-columns: 100px 1fr; gap: 12px; font-size: 13px; margin: 11px 0; }
+    .kv span:first-child { color: var(--muted); }
+    .tags { display: flex; gap: 6px; flex-wrap: wrap; }
+    .tag { background: #f1f2f5; color: #5f646d; border-radius: 5px; padding: 4px 7px; font-size: 12px; }
+    .modal { position: fixed; z-index: 70; left: 50%; top: 50%; width: 620px; max-width: calc(100vw - 30px); max-height: calc(100vh - 40px); overflow-y: auto; background: white; border-radius: 13px; box-shadow: var(--shadow); transform: translate(-50%, -48%) scale(.98); opacity: 0; pointer-events: none; transition: .18s ease; }
+    .modal.open { transform: translate(-50%, -50%) scale(1); opacity: 1; pointer-events: auto; }
+    .modal-head { display: flex; align-items: center; justify-content: space-between; padding: 19px 22px; border-bottom: 1px solid var(--line); }
+    .modal-head h2 { font-size: 18px; margin: 0; }
+    .modal-body { padding: 22px; }
+    .choice-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+    .choice { border: 1px solid var(--line); background: white; border-radius: 9px; padding: 15px; text-align: left; min-height: 116px; }
+    .choice:hover, .choice.selected { border-color: var(--primary); background: #f8f8ff; }
+    .choice-icon { width: 31px; height: 31px; display: grid; place-items: center; border-radius: 8px; background: var(--primary-soft); color: var(--primary); margin-bottom: 12px; }
+    .choice strong { display: block; font-size: 14px; margin-bottom: 5px; }
+    .choice span { display: block; color: var(--muted); font-size: 12px; line-height: 1.5; }
+    .form { margin-top: 22px; display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    #createModal .form { margin-top: 0; }
+    .delete-confirm-modal { width: 420px; }
+    .delete-confirm-modal .modal-body { padding: 22px; color: var(--muted); line-height: 1.65; }
+    .delete-confirm-modal .modal-body strong { display: block; margin-bottom: 6px; color: var(--text); font-size: 15px; }
+    .delete-confirm-modal .confirm-danger { color: #fff; background: #d64d5b; border-color: #d64d5b; }
+    .delete-confirm-modal .confirm-danger:hover { background: #e05a67; }
+    .field.full { grid-column: 1 / -1; }
+    .field label { display: block; font-size: 13px; margin-bottom: 7px; }
+    .field input, .field select { width: 100%; height: 39px; border: 1px solid var(--line); border-radius: 8px; padding: 0 11px; outline: 0; background: white; }
+    .field input:focus, .field select:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(91,92,226,.1); }
+    .upload-zone { border: 1px dashed #c9ccd5; border-radius: 9px; min-height: 92px; display: grid; place-items: center; text-align: center; color: var(--muted); font-size: 12px; background: #fafafa; }
+    .upload-zone b { color: var(--primary); font-weight: 550; }
+    .modal-foot { display: flex; justify-content: flex-end; gap: 9px; padding: 16px 22px; border-top: 1px solid var(--line); }
+    .toast { position: fixed; left: 50%; bottom: 28px; transform: translate(-50%, 18px); background: #252830; color: white; border-radius: 8px; padding: 11px 16px; z-index: 90; opacity: 0; pointer-events: none; transition: .2s; font-size: 13px; box-shadow: var(--shadow); }
+    .toast.show { opacity: 1; transform: translate(-50%, 0); }
+    @media (max-width: 1180px) { .grid { grid-template-columns: repeat(3, minmax(210px, 1fr)); } }
+    @media (max-width: 900px) {
+      .app { grid-template-columns: 76px 1fr; }
+      .sidebar { padding-left: 10px; padding-right: 10px; }
+      .brand span, .workspace-switch div, .workspace-switch > span, .nav-item span:not(.nav-icon), .nav-section, .user-mini > div { display: none; }
+      .brand, .nav-item, .workspace-switch { justify-content: center; }
+      .workspace-switch { height: 42px; }
+      .summary { grid-template-columns: 1fr 1fr; }
+      .summary-item:nth-child(2)::after { display: none; }
+      .summary-item:nth-child(-n+2) { border-bottom: 1px solid var(--line); }
+      .grid { grid-template-columns: repeat(2, minmax(210px, 1fr)); }
+      .list-row { grid-template-columns: 2fr .8fr .8fr 30px; }
+      .hide-tablet { display: none; }
+    }
+    @media (max-width: 640px) {
+      .app { display: block; }
+      .sidebar { display: none; }
+      .topbar { padding: 0 16px; }
+      .content { padding: 22px 16px 40px; }
+      .page-heading { display: block; }
+      .heading-actions { margin-top: 17px; }
+      .toolbar { align-items: flex-start; }
+      .filters { width: 100%; }
+      .search { width: 100%; }
+      .grid { grid-template-columns: 1fr; }
+      .summary { grid-template-columns: 1fr 1fr; }
+      .choice-grid, .form { grid-template-columns: 1fr; }
+      .field.full { grid-column: auto; }
+      .choice { min-height: auto; }
+      .view-toggle { display: none; }
+    }
+    /* Dark team-console theme based on the supplied interaction reference. */
+    :root {
+      --bg: #121212;
+      --panel: #1c1c1d;
+      --text: #f3f4f6;
+      --muted: #9297a1;
+      --line: #2d2e31;
+      --primary: #72ddff;
+      --primary-soft: #18353e;
+      --success: #79d9ae;
+      --success-soft: #163429;
+      --warning: #f0c36b;
+      --warning-soft: #3a2d16;
+      --info: #8dc6ff;
+      --info-soft: #183049;
+      --shadow: 0 18px 50px rgba(0,0,0,.45);
+    }
+    body { background: var(--bg); }
+    .sidebar { background: #161616; color: #c9cbd0; border-right: 1px solid var(--line); }
+    .brand { border-bottom: 1px solid var(--line); margin: 0 -14px 14px; padding: 0 24px 16px; }
+    .brand { height: 62px; padding: 0 22px 14px; gap: 12px; white-space: nowrap; }
+    .olight-mark { width: 34px; height: 34px; flex: 0 0 auto; display: block; }
+    .olight-title { color: #f3f4f6; font-size: 17px; font-weight: 650; letter-spacing: .2px; }
+    .brand-mark { background: linear-gradient(145deg, #72ddff, #4ccf9b); }
+    .workspace-switch { background: #202021; border-color: #343539; }
+    .nav-item:hover { background: #242426; }
+    .nav-item.active { background: #2b2b2d; color: white; }
+    .material-heading { margin-top: 18px; color: #aeb2ba; font-size: 13px; font-weight: 550; }
+    .nav-icon svg { width: 18px; height: 18px; display: block; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
+    .nav-parent { justify-content: space-between; }
+    .nav-parent .nav-label { display: flex; align-items: center; gap: 11px; }
+    .nav-caret { color: #7e838d; transition: transform .18s ease; }
+    .nav-parent.expanded .nav-caret { transform: rotate(90deg); }
+    .subnav { margin: 3px 0 14px 29px; display: grid; gap: 3px; }
+    .subnav.collapsed { display: none; }
+    .subnav-item { height: 36px; border: 0; border-radius: 7px; background: transparent; color: #9ca1aa; text-align: left; padding: 0 12px; position: relative; }
+    .subnav-item:hover { background: #242426; color: white; }
+    .subnav-item.active { background: #2b2b2d; color: white; font-weight: 550; }
+    .subnav-item.active::before { content: ""; position: absolute; width: 2px; height: 16px; left: 0; top: 10px; border-radius: 2px; background: var(--primary); }
+    .nav-section { color: #686d76; }
+    .topbar { height: 82px; background: #151515; border-color: var(--line); backdrop-filter: none; }
+    .team-head { display: flex; align-items: center; gap: 12px; }
+    .team-avatar { width: 38px; height: 38px; border-radius: 50%; display: grid; place-items: center; background: #4fd19b; color: white; font-weight: 650; }
+    .team-name { font-weight: 600; font-size: 15px; }
+    .team-meta { color: var(--muted); font-size: 12px; margin-top: 4px; }
+    .team-badge { display: inline-block; background: #28282a; color: #cfd1d6; border-radius: 12px; padding: 3px 8px; font-size: 11px; margin-left: 7px; }
+    .top-actions .btn { background: #29292b; border-color: #29292b; color: white; }
+    .top-actions .btn.primary { background: var(--primary); border-color: var(--primary); color: #102027; }
+    .icon-btn, .btn, .select, .search, .field input, .field select, .choice { background: #202022; border-color: var(--line); color: var(--text); }
+    .btn:hover, .choice:hover { background: #29292b; border-color: #414247; }
+    .btn.primary { color: #102027; }
+    .content { max-width: none; padding-top: 28px; }
+    .summary, .style-card, .list, .drawer, .modal { background: var(--panel); border-color: var(--line); }
+    .summary-item:not(:last-child)::after, .summary-item:nth-child(-n+2), .tabs, .list-row, .drawer-head, .section, .modal-head, .modal-foot { border-color: var(--line); }
+    .style-card:hover { border-color: #48494d; box-shadow: 0 8px 26px rgba(0,0,0,.25); }
+    .list-row.header, .upload-zone { background: #181819; }
+    .drawer-head { background: var(--panel); }
+    .close, .icon-btn { color: #c8cbd1; }
+    .search input { color: var(--text); }
+    .select option, .field select option { background: #202022; color: var(--text); }
+    .tab-count, .tag { background: #2a2a2c; color: #aeb1b8; }
+    .view-toggle { background: #242426; }
+    .view-toggle button.active { background: #39393c; color: white; box-shadow: none; }
+    .asset-tabs { display: flex; gap: 8px; margin-top: 26px; padding-bottom: 14px; border-bottom: 1px solid var(--line); }
+    .asset-tab { border: 0; background: transparent; color: #9da1aa; border-radius: 7px; height: 36px; padding: 0 16px; }
+    .asset-tab:hover { background: #202022; color: white; }
+    .asset-tab.active { background: #2b2b2d; color: white; font-weight: 550; }
+    .library-panel { margin-top: 18px; }
+    .breadcrumb { color: #afb3bb; }
+    .breadcrumb b { color: white; }
+    .user-mini { border-color: var(--line); }
+    .library-layout { display: grid; grid-template-columns: 238px minmax(0, 1fr); gap: 18px; margin-top: 18px; align-items: start; }
+    .folder-panel { position: sticky; top: 18px; min-height: 560px; background: #1b1b1d; border: 1px solid var(--line); border-radius: 12px; padding: 10px; }
+    .folder-tree { display: grid; gap: 4px; }
+    .folder-row { position: relative; min-height: 40px; display: flex; align-items: center; gap: 9px; border-radius: 8px; padding: 0 8px; color: #c7cad0; cursor: pointer; }
+    .folder-row:hover { background: #242426; color: white; }
+    .folder-row.active { background: #323234; color: white; }
+    .folder-row.root { font-weight: 600; }
+    .tree-caret { width: 18px; height: 30px; border: 0; background: transparent; color: #8d929b; padding: 0; transition: transform .16s; }
+    .tree-caret.open { transform: rotate(90deg); }
+    .tree-spacer { width: 18px; }
+    .tree-icon { width: 18px; height: 18px; flex: 0 0 auto; color: #bfc2c8; }
+    .tree-icon svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
+    .folder-name { min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: 13px; font-weight: 550; }
+    .folder-more { margin-left: auto; width: 30px; height: 30px; border: 0; border-radius: 8px; background: transparent; color: #b8bbc2; opacity: 0; }
+    .folder-row:hover .folder-more, .folder-more.open { opacity: 1; background: #353538; }
+    .folder-children { margin-left: 26px; display: grid; gap: 3px; }
+    .folder-children.collapsed { display: none; }
+    .folder-context { position: absolute; z-index: 20; width: 184px; right: 8px; top: 108px; background: #111113; border: 1px solid #343539; border-radius: 10px; overflow: hidden; box-shadow: var(--shadow); display: none; }
+    .folder-context.open { display: block; }
+    .folder-action { width: 100%; min-height: 42px; border: 0; background: transparent; color: #f1f2f4; text-align: left; padding: 0 13px; display: flex; align-items: center; gap: 9px; }
+    .folder-action:hover { background: #252527; }
+    .folder-action.danger { color: #ff6675; border-top: 1px solid #303135; }
+    .library-content { min-width: 0; }
+    .action-toolbar { display: flex; align-items: center; gap: 9px; flex-wrap: wrap; margin-bottom: 12px; }
+    .action-toolbar .btn { font-weight: 550; }
+    .action-toolbar .btn.primary { margin-left: auto; }
+    .card-check { position: absolute; z-index: 3; left: 9px; top: 9px; width: 18px; height: 18px; accent-color: var(--primary); opacity: 0; transition: opacity .15s; }
+    .style-card:hover .card-check, .style-card.selected .card-check { opacity: 1; }
+    .style-card.selected { border-color: var(--primary); box-shadow: 0 0 0 1px var(--primary); }
+    .grid .style-card .card-body { display: none; }
+    .grid .style-card .cover { border-radius: 10px; }
+    .folder-modal { width: 430px; }
+    .folder-modal .form { display: block; margin-top: 0; }
+    .upload-input { display: none; }
+    @media (max-width: 1050px) { .library-layout { grid-template-columns: 210px minmax(0,1fr); } .action-toolbar .btn { padding: 0 10px; } }
+    @media (max-width: 760px) { .library-layout { display: block; } .folder-panel { position: static; min-height: auto; margin-bottom: 14px; } .action-toolbar .btn.primary { margin-left: 0; } }
+    @media (max-width: 640px) {
+      .topbar { height: 64px; padding: 0 12px; }
+      .team-meta, .team-badge, .top-actions .btn { display: none; }
+      .team-avatar { width: 32px; height: 32px; }
+      .team-name { font-size: 13px; }
+      .top-actions { margin-left: auto; }
+      .heading-actions { flex-wrap: wrap; }
+      .asset-tabs { margin-top: 20px; }
+    }
+    /* Refined content hierarchy */
+    .content { padding: 24px 30px 48px; }
+    .library-panel { margin-top: 0; }
+    .tabs { height: 58px; align-items: center; gap: 28px; padding: 0 5px; }
+    .tab { height: 58px; padding: 0 2px; display: inline-flex; align-items: center; gap: 6px; font-size: 14px; }
+    .tab.active::after { left: 0; right: 0; height: 3px; background: var(--primary); }
+    .tab-count { min-width: 19px; height: 19px; padding: 0 6px; display: inline-flex; align-items: center; justify-content: center; border-radius: 10px; }
+    .library-layout { grid-template-columns: 228px minmax(0, 1fr); gap: 20px; margin-top: 20px; }
+    .folder-panel { min-height: 0; padding: 12px; border-radius: 14px; background: linear-gradient(180deg,#1d1d1f 0%,#19191b 100%); box-shadow: 0 10px 30px rgba(0,0,0,.14); }
+    .folder-panel-head { min-height: 46px; display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 0 4px 10px; margin-bottom: 8px; border-bottom: 1px solid #2d2e31; }
+    .folder-panel-head strong { font-size: 14px; font-weight: 600; color: #f1f2f4; }
+    .folder-add { height: 30px; border: 1px solid #426573; border-radius: 7px; padding: 0 10px; background: #1d3037; color: #8ee5ff; }
+    .folder-add:hover { background: #25424c; border-color: #5f91a3; }
+    .folder-tree { gap: 3px; }
+    .folder-row { min-height: 42px; padding: 0 9px; border-radius: 9px; }
+    .folder-row.active { background: #333336; box-shadow: inset 3px 0 0 var(--primary); }
+    .folder-row.root.active { box-shadow: none; background: #343437; }
+    .folder-more { transition: opacity .15s ease, background .15s ease; }
+    .action-toolbar { min-height: 46px; padding: 0; margin: 0 0 12px; border: 0; border-radius: 0; background: transparent; gap: 10px; justify-content: flex-end; }
+    .action-toolbar .btn { height: 40px; padding: 0 13px; border-color: #36373b; background: #232325; }
+    .action-toolbar .btn:hover { background: #2b2b2e; border-color: #4a4b50; }
+    .action-toolbar .btn.primary { margin-left: 0; background: var(--primary); border-color: var(--primary); color: #102027; }
+    .batch-menu-wrap { position: relative; }
+    .batch-toggle { min-width: 116px; justify-content: space-between; }
+    .batch-toggle .chevron { color: #a8acb4; transition: transform .16s ease; }
+    .batch-toggle.open .chevron { transform: rotate(180deg); }
+    .batch-menu { position: absolute; z-index: 30; top: 46px; right: 0; width: 174px; display: none; padding: 6px; background: #171719; border: 1px solid #36373b; border-radius: 10px; box-shadow: var(--shadow); }
+    .batch-menu.open { display: grid; }
+    .batch-menu button { min-height: 40px; border: 0; border-radius: 7px; background: transparent; color: #eceef2; display: flex; align-items: center; gap: 9px; padding: 0 10px; text-align: left; }
+    .batch-menu button:hover { background: #29292c; }
+    .batch-menu button.danger { color: #ff6d79; }
+    .batch-menu button.danger:disabled { color: #686d78; opacity: .55; cursor: not-allowed; background: transparent; }
+    .action-icon { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+    .toolbar { min-height: 62px; margin-bottom: 16px; padding: 10px; border: 1px solid var(--line); border-radius: 12px; background: #18181a; }
+    .filters { flex: 1; }
+    .search { width: min(390px, 100%); height: 40px; background: #222224; }
+    .search svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 1.8; flex: 0 0 auto; }
+    .select { height: 40px; background: #222224; }
+    .view-toggle { padding: 4px; border: 1px solid #303135; }
+    .view-toggle button { height: 30px; transition: background .15s ease, color .15s ease; }
+    .grid { gap: 18px; }
+    .style-card { border-radius: 12px; background: #1a1a1c; }
+    .style-card:hover { transform: translateY(-3px); box-shadow: 0 12px 30px rgba(0,0,0,.25); }
+    .grid .style-card .cover { height: auto; aspect-ratio: 1.45 / 1; border-radius: 11px; }
+    .card-menu { transition: opacity .15s ease, background .15s ease; }
+    .card-stats { position: absolute; z-index: 2; left: 0; right: 0; bottom: 0; min-height: 38px; padding: 7px 10px; display: grid; grid-template-columns: repeat(3,1fr); gap: 7px; background: linear-gradient(180deg,rgba(10,11,14,0),rgba(10,11,14,.88) 34%,rgba(10,11,14,.94)); color: #d7dae0; pointer-events: none; }
+    .card-stat { min-width: 0; display: flex; align-items: baseline; gap: 4px; white-space: nowrap; font-size: 10px; }
+    .card-stat span { color: #a4a9b2; }
+    .card-stat b { color: white; font-size: 12px; font-weight: 550; overflow: hidden; text-overflow: ellipsis; }
+    .metric-select { min-width: 96px; }
+    @media (max-width: 1180px) { .library-layout { grid-template-columns: 210px minmax(0,1fr); gap: 16px; } .action-toolbar .btn { padding: 0 10px; } }
+    /* Compact light library layout based on the supplied product reference. */
+    :root { --bg:#f5f8fc; --panel:#fff; --text:#1d2738; --muted:#7b8798; --line:#dfe6ef; --primary:#3478f6; --primary-soft:#eaf2ff; --success:#21865d; --success-soft:#e8f6ef; --warning:#a86808; --warning-soft:#fff5dc; --info:#2f6fd0; --info-soft:#e9f1ff; --shadow:0 10px 26px rgba(43,72,112,.14); }
+    html,body { font-size:13px; color:var(--text); background:var(--bg); }
+    .app { grid-template-columns:172px minmax(0,1fr); }
+    .sidebar { height:100vh; padding:14px 12px; background:#fff; color:#4b5870; border-right:1px solid var(--line); }
+    .brand { height:56px; margin:0 -12px 10px; padding:0 18px 12px; border-color:var(--line); }
+    .olight-mark { width:28px; height:28px; }
+    .olight-title { color:#202b3d; font-size:15px; font-weight:700; }
+    .material-heading,.nav-section { margin:14px 10px 6px; color:#8a95a7; font-size:11px; font-weight:500; }
+    .nav-item { min-height:38px; margin:2px 0; padding:0 11px; border-radius:6px; color:#4b5870; font-size:13px; }
+    .nav-item:hover { background:#f2f6fc; color:#2459a9; }
+    .nav-item.active { color:#2465d8; background:#eaf2ff; font-weight:600; }
+    .nav-icon svg { width:16px; height:16px; }
+    .user-mini { border-color:var(--line); }
+    .main { background:#f5f8fc; }
+    .content { max-width:none; margin:0; padding:0 20px 38px; }
+    .library-panel { margin:0; }
+    .page-path { height:48px; display:flex; align-items:center; color:#758299; font-size:12px; border-bottom:1px solid var(--line); }
+    .tabs { height:44px; padding:0; gap:24px; background:transparent; border-color:var(--line); }
+    .tab { height:44px; padding:0 2px; color:#7a879a; font-size:13px; }
+    .tab.active { color:#245fca; font-weight:600; }
+    .tab.active::after { height:2px; background:var(--primary); }
+    .tab-count { min-width:18px; height:18px; background:#edf1f6; color:#7f8a9a; font-size:10px; }
+    .library-layout { grid-template-columns:198px minmax(0,1fr); gap:16px; margin-top:14px; }
+    .folder-panel { top:14px; min-height:600px; padding:10px; border:1px solid var(--line); border-radius:8px; background:#fff; box-shadow:none; }
+    .folder-panel-head { min-height:34px; padding:0 0 8px; margin-bottom:7px; border:0; }
+    .folder-panel-head strong { color:#253147; font-size:13px; font-weight:650; }
+    .folder-add { height:28px; padding:0 10px; border:1px solid #8cb4ff; border-radius:5px; background:#fff; color:#3478f6; font-size:12px; }
+    .folder-add:hover { background:#edf4ff; border-color:#6598f8; }
+    .folder-search { height:30px; margin-bottom:8px; display:flex; align-items:center; gap:6px; padding:0 9px; border:1px solid var(--line); border-radius:5px; color:#9aa5b5; background:#fff; }
+    .folder-search input { width:100%; min-width:0; border:0; outline:0; color:var(--text); background:transparent; font-size:12px; }
+    .folder-tree { gap:1px; }
+    .folder-row { min-height:34px; gap:6px; padding:0 6px; border-radius:5px; color:#536076; }
+    .folder-row:hover { background:#f3f6fb; color:#2c5fae; }
+    .folder-row.active,.folder-row.root.active { color:#2768da; background:#eaf2ff; box-shadow:none; }
+    .folder-name { font-size:12px; font-weight:550; }
+    .tree-caret { width:14px; height:26px; color:#8190a5; }
+    .tree-spacer { width:14px; }
+    .tree-icon,.tree-icon svg { width:15px; height:15px; }
+    .folder-children { margin-left:20px; }
+    .folder-more { width:26px; height:26px; color:#7a8798; }
+    .folder-row:hover .folder-more,.folder-more.open { background:#dfeafe; }
+    .folder-context { top:98px; right:6px; width:158px; border-color:var(--line); border-radius:7px; background:#fff; }
+    .folder-action { min-height:36px; padding:0 11px; color:#354258; font-size:12px; }
+    .folder-action:hover { background:#f3f6fb; }
+    .folder-action.danger { color:#d14b58; border-color:var(--line); }
+    .collection-heading { min-height:52px; display:flex; align-items:center; justify-content:space-between; gap:16px; margin-bottom:8px; }
+    .collection-heading h2 { margin:0 0 4px; color:#1f2b40; font-size:16px; line-height:1.2; font-weight:650; }
+    .collection-heading p { margin:0; color:#8692a4; font-size:11px; }
+    .action-toolbar { min-height:34px; margin:0; gap:8px; }
+    .action-toolbar .btn { height:32px; padding:0 12px; border:1px solid var(--line); border-radius:5px; background:#fff; color:#3e4a5e; font-size:12px; font-weight:550; }
+    .action-toolbar .btn:hover { background:#f7f9fc; border-color:#bcc9da; }
+    .action-toolbar .btn.primary { min-width:116px; background:var(--primary); border-color:var(--primary); color:#fff; }
+    .action-toolbar .btn.primary:hover { background:#286ce8; border-color:#286ce8; }
+    .batch-toggle { min-width:96px; }
+    .batch-menu { top:37px; width:190px; padding:5px; border-color:var(--line); border-radius:7px; background:#fff; }
+    .batch-menu button,.batch-menu a { min-height:35px; border:0; border-radius:5px; color:#39465a; background:transparent; display:flex; align-items:center; gap:9px; padding:0 10px; text-align:left; text-decoration:none; font-size:12px; }
+    .batch-menu button:hover,.batch-menu a:hover { background:#f2f6fc; }
+    .batch-menu button.danger { color:#cf4654; }
+    .toolbar { min-height:42px; margin:0 0 10px; padding:0; border:0; border-radius:0; background:transparent; }
+    .filters { gap:8px; flex-wrap:nowrap; }
+    .search { width:min(240px,100%); height:32px; padding:0 9px; border-radius:5px; background:#fff; }
+    .search input { color:var(--text); font-size:12px; }
+    .select { min-width:88px; height:32px; padding-left:9px; border-radius:5px; background:#fff; color:#4e5b70; font-size:12px; }
+    .select option { background:#fff; color:var(--text); }
+    .metric-select { min-width:88px; }
+    .view-toggle { padding:2px; border:1px solid var(--line); border-radius:5px; background:#fff; }
+    .view-toggle button { width:28px; height:27px; border-radius:4px; font-size:12px; }
+    .view-toggle button.active { background:#eaf2ff; color:#3478f6; box-shadow:none; }
+    .grid { grid-template-columns:repeat(4,minmax(170px,1fr)); gap:10px; }
+    .style-card { border:1px solid var(--line); border-radius:7px; background:#fff; box-shadow:0 1px 3px rgba(39,67,105,.04); }
+    .style-card:hover { transform:translateY(-1px); border-color:#b9c9df; box-shadow:0 7px 18px rgba(45,77,119,.10); }
+    .grid .style-card .cover { height:116px; aspect-ratio:auto; border-radius:6px 6px 0 0; }
+    .grid .style-card .card-body { display:block; padding:8px 9px 9px; }
+    .card-menu { top:6px; right:6px; width:24px; height:24px; border-radius:5px; font-size:11px; }
+    .card-check { left:7px; top:7px; width:15px; height:15px; accent-color:var(--primary); }
+    .card-title { color:#1f2a3c; font-size:13px; font-weight:650; }
+    .status { padding:2px 5px; border-radius:4px; font-size:9px; }
+    .card-desc { display:inline-block; max-width:100%; margin:5px 0 6px; padding:2px 5px; border-radius:3px; color:#3971c8; background:#eaf2ff; font-size:10px; }
+    .card-stats { position:static; min-height:36px; padding:5px 0 6px; display:grid; grid-template-columns:repeat(3,1fr); gap:6px; border-top:1px solid #edf0f4; background:transparent; color:#4a5669; }
+    .card-stat { display:grid; gap:2px; font-size:9px; }
+    .card-stat span { color:#8c97a8; }
+    .card-stat b { color:#303c50; font-size:11px; font-weight:550; }
+    .card-meta { padding-top:5px; border-top:1px solid #edf0f4; color:#8994a5; font-size:9px; }
+    .published { color:#247653; background:#e8f6ef; }
+    .review { color:#98620e; background:#fff3d6; }
+    .draft { color:#697487; background:#eef1f5; }
+    .training { color:#2e67bd; background:#e8f1ff; }
+    .list,.drawer,.modal { background:#fff; color:var(--text); }
+    .list-row.header,.upload-zone { background:#f7f9fc; }
+    .drawer-head { background:#fff; }
+    .icon-btn,.btn,.field input,.field select,.choice { background:#fff; border-color:var(--line); color:var(--text); }
+    .field select option { background:#fff; color:var(--text); }
+    @media (max-width:1180px) { .grid { grid-template-columns:repeat(3,minmax(170px,1fr)); } .filters { flex-wrap:wrap; } }
+    @media (max-width:760px) { .library-layout { display:block; } .folder-panel { min-height:auto; margin-bottom:12px; } .collection-heading { align-items:flex-start; } .action-toolbar { justify-content:flex-end; } }
+    @media (max-width:640px) { .grid { grid-template-columns:1fr; } .filters { flex-wrap:wrap; } .collection-heading { flex-wrap:wrap; } }
+
+    /* Keep the compact reference layout while restoring the system dark theme. */
+    :root { --bg:#0f1115; --panel:#181a1f; --text:#edf1f7; --muted:#8d96a5; --line:#2b2f37; --primary:#4f8df7; --primary-soft:#1b3152; --success:#73d2a5; --success-soft:#153428; --warning:#efbf63; --warning-soft:#382b14; --info:#83b8ff; --info-soft:#19304f; --shadow:0 12px 30px rgba(0,0,0,.38); }
+    html,body,.main { color:var(--text); background:var(--bg); }
+    .sidebar { color:#b9c0cb; background:#121419; border-color:var(--line); }
+    .brand { border-color:var(--line); }
+    .olight-title { color:#f1f4f8; }
+    .material-heading,.nav-section { color:#747d8b; }
+    .nav-item { color:#b9c0cb; }
+    .nav-item:hover { color:#fff; background:#1b1e24; }
+    .nav-item.active { color:#fff; background:#292c33; }
+    .user-mini { border-color:var(--line); }
+    .content,.library-panel { background:var(--bg); }
+    .page-path { color:#7f8897; border-color:var(--line); }
+    .tabs { border-color:var(--line); }
+    .tab { color:#757e8c; }
+    .tab.active { color:#f2f5f9; }
+    .tab-count { color:#a2a9b4; background:#292c32; }
+    .folder-panel { color:var(--text); background:#181a1f; border-color:var(--line); }
+    .folder-panel-head strong { color:#f0f3f7; }
+    .folder-add { color:#86b5ff; background:#182640; border-color:#355d96; }
+    .folder-add:hover { color:#a4c8ff; background:#203559; border-color:#4f7db8; }
+    .folder-search,.search,.select,.view-toggle { color:#929baa; background:#1e2026; border-color:#32363f; }
+    .folder-search input,.search input { color:#eef1f5; }
+    .folder-search input::placeholder,.search input::placeholder { color:#737c8a; }
+    .folder-row { color:#bbc1ca; }
+    .folder-row:hover { color:#fff; background:#22252b; }
+    .folder-row.active,.folder-row.root.active { color:#fff; background:#2a2d34; }
+    .tree-caret,.tree-icon { color:#929aa7; }
+    .folder-row:hover .folder-more,.folder-more.open { color:#dce2ea; background:#343840; }
+    .folder-context,.batch-menu { color:var(--text); background:#191b20; border-color:#343841; }
+    .folder-action,.batch-menu button,.batch-menu a { color:#e6e9ee; }
+    .folder-action:hover,.batch-menu button:hover,.batch-menu a:hover { background:#292c33; }
+    .folder-action.danger,.batch-menu button.danger { color:#ff7783; border-color:#343841; }
+    .collection-heading h2 { color:#f2f4f7; }
+    .collection-heading p { color:#858e9d; }
+    .action-toolbar .btn,.btn,.icon-btn,.field input,.field select,.choice { color:#edf0f5; background:#22242a; border-color:#343841; }
+    .action-toolbar .btn:hover,.btn:hover,.choice:hover { color:#fff; background:#2b2e35; border-color:#454a54; }
+    .action-toolbar .btn.primary,.btn.primary { color:#fff; background:var(--primary); border-color:var(--primary); }
+    .action-toolbar .btn.primary:hover,.btn.primary:hover { background:#407ee8; border-color:#407ee8; }
+    .select { color:#d8dde5; }
+    .select option,.field select option { color:#edf1f7; background:#202229; }
+    .view-toggle button { color:#848d9a; }
+    .view-toggle button.active { color:#fff; background:#373b44; }
+    .style-card,.list,.drawer,.modal { color:var(--text); background:#181a1f; border-color:var(--line); }
+    .style-card:hover { border-color:#444a55; box-shadow:0 8px 22px rgba(0,0,0,.30); }
+    .card-title { color:#f1f3f6; }
+    .card-desc { color:#96bdff; background:#1a3152; }
+    .card-stats,.card-meta { border-color:#2c3038; }
+    .card-stat span,.card-meta { color:#8992a1; }
+    .card-stat b { color:#eef1f5; }
+    .published { color:#76d4a8; background:#153629; }
+    .review { color:#f1c363; background:#3a2d15; }
+    .draft { color:#c2c7d0; background:#30333a; }
+    .training { color:#8ebcff; background:#1a3151; }
+    .list-row.header,.upload-zone { background:#15171b; }
+    .drawer-head { background:#181a1f; }
+    .modal-head,.modal-foot,.drawer-head,.section,.list-row { border-color:var(--line); }
+    .field input { color:#eef1f6; }
+    .list-row { grid-template-columns:2.2fr .85fr .85fr .8fr 34px; }
+    .metric-entry { padding-top:4px; }
+    .metric-entry-title { display:flex; align-items:baseline; justify-content:space-between; gap:12px; margin-bottom:10px; }
+    .metric-entry-title label { margin:0; color:#f0f3f7; font-weight:600; }
+    .metric-entry-title label span { margin-left:5px; padding:2px 5px; border-radius:4px; color:#97a0ae; background:#292c33; font-size:10px; font-weight:500; }
+    .metric-entry-title small { color:#818a98; font-size:11px; }
+    .metric-input-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; }
+    .metric-input-grid > label { display:grid; gap:6px; color:#aeb5c0; font-size:11px; }
+    .metric-input-grid input { width:100%; height:36px; padding:0 10px; border:1px solid #343841; border-radius:6px; outline:0; color:#eef1f6; background:#202229; }
+    .metric-input-grid input:focus { border-color:#4f8df7; box-shadow:0 0 0 3px rgba(79,141,247,.12); }
+    .suffix-input { position:relative; }
+    .suffix-input input { padding-right:28px; }
+    .suffix-input i { position:absolute; right:10px; top:10px; color:#8d96a4; font-style:normal; }
+    .metric-import-row { min-height:58px; margin-top:12px; padding:10px; display:flex; align-items:center; gap:8px; border:1px solid #30343c; border-radius:7px; background:#191b20; }
+    .metric-import-row > div { min-width:0; margin-right:auto; }
+    .metric-import-row strong,.metric-import-row small { display:block; }
+    .metric-import-row strong { margin-bottom:4px; color:#e8ebf0; font-size:12px; }
+    .metric-import-row small { color:#7f8897; font-size:10px; }
+    .metric-import-row .btn { height:30px; padding:0 9px; font-size:11px; white-space:nowrap; }
+    .batch-import-modal { width:640px; }
+    .batch-import-intro { margin:0 0 16px; color:#8e97a5; font-size:12px; line-height:1.7; }
+    .import-steps { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:18px; }
+    .import-step { position:relative; display:flex; align-items:center; gap:9px; padding:10px 12px; border:1px solid #343841; border-radius:8px; color:#7f8897; background:#191b20; font-size:12px; }
+    .import-step::after { content:""; position:absolute; left:0; right:0; bottom:-1px; height:2px; border-radius:2px; background:transparent; }
+    .import-step b { width:22px; height:22px; display:grid; place-items:center; border-radius:50%; color:#9ba4b2; background:#292c33; font-size:11px; }
+    .import-step.active { color:#eef1f6; border-color:#486da9; background:#1c2432; }
+    .import-step.active::after { background:var(--primary); }
+    .import-step.active b { color:#fff; background:var(--primary); }
+    .import-panel[hidden] { display:none; }
+    .import-note { margin-top:14px; padding:12px 14px; border-radius:8px; color:#8e97a5; background:#191b20; font-size:11px; line-height:1.8; }
+    .import-note strong { color:#dfe4ec; }
+    .image-file-summary { margin-top:9px; color:#8f99a7; font-size:11px; line-height:1.6; overflow-wrap:anywhere; }
+    .smart-import-page { padding-bottom:112px; }
+    .smart-import-head { display:flex; align-items:flex-start; justify-content:space-between; gap:20px; margin-bottom:18px; }
+    .smart-import-head h1 { margin:8px 0 4px; color:#f1f4f8; font-size:22px; }
+    .smart-import-head p { margin:0; color:#858e9d; font-size:12px; }
+    .smart-stepper { position:relative; display:grid; grid-template-columns:repeat(2,1fr); gap:0; margin-bottom:18px; padding:14px 18px; border:1px solid #2d3139; border-radius:9px; background:#17191e; }
+    .smart-stepper::before { content:""; position:absolute; left:25%; right:25%; top:28px; height:1px; background:#343841; }
+    .smart-step { position:relative; display:flex; align-items:center; justify-content:center; gap:10px; color:#77808e; font-size:12px; }
+    .smart-step b { position:relative; z-index:1; width:28px; height:28px; display:grid; place-items:center; flex:0 0 auto; border:1px solid #454a54; border-radius:50%; color:#9aa3b1; background:#1d2026; font-size:12px; }
+    .smart-step span { position:relative; z-index:1; padding-right:10px; background:#17191e; }
+    .smart-step.active { color:#eef2f7; }
+    .smart-step.active b,.smart-step.done b { color:#fff; border-color:var(--primary); background:var(--primary); }
+    .smart-step.done { color:#aeb7c5; }
+    .smart-panel { border:1px solid #2d3139; border-radius:10px; background:#17191e; overflow:hidden; }
+    .smart-upload-layout { display:grid; grid-template-columns:240px minmax(0,1fr); gap:14px; margin:14px 18px 18px; padding:16px; border:0; border-radius:9px; background:#15171b; }
+    .smart-image-import-title { grid-column:1 / -1; margin:0; color:#eef2f7; font-size:13px; font-weight:600; }
+    .smart-data-import { margin:18px 18px 0; padding:16px; border:0; border-radius:9px; background:#15171b; }
+    .smart-data-import-head { display:flex; align-items:flex-start; justify-content:space-between; gap:16px; margin-bottom:14px; }
+    .smart-data-import-main { min-width:0; }
+    .smart-data-import-main strong { display:block; margin-bottom:5px; color:#eef2f7; font-size:13px; }
+    .smart-data-import-main p { margin:0; color:#858e9d; font-size:11px; }
+    .smart-data-upload-row { display:flex; align-items:stretch; gap:14px; }
+    .smart-data-drop { width:240px; min-height:130px; display:grid; place-items:center; flex-shrink:0; text-align:center; border:1px dashed #536078; border-radius:8px; color:#aeb8c7; background:#17191e; cursor:pointer; transition:border-color .18s,background .18s,box-shadow .18s; }
+    .smart-data-drop:hover { border-color:#6f9cff; background:#1b1e25; box-shadow:0 0 0 3px rgba(90,139,247,.08); }
+    .smart-data-drop input { display:none; }
+    .smart-data-drop-icon { display:block; margin-bottom:5px; color:#79a8ff; font-size:26px; line-height:1; }
+    .smart-data-drop b { color:#eef2f7; font-size:13px; font-weight:600; }
+    .smart-data-drop small { display:block; margin-top:7px; color:#788291; font-size:10px; }
+    .smart-data-guide { min-width:0; flex:1; padding:10px 12px; border-radius:8px; background:#191c21; }
+    .smart-data-fields { display:flex; flex-wrap:wrap; gap:6px; }
+    .smart-data-fields span { padding:3px 7px; border-radius:4px; color:#aeb8c7; background:#23262d; font-size:10px; }
+    .smart-data-import-actions { display:flex; align-items:center; gap:10px; flex-shrink:0; }
+    .smart-data-status { color:#79a8ff; font-size:11px; white-space:nowrap; }
+    .smart-drop { min-height:130px; display:grid; place-items:center; text-align:center; border:1px dashed #536078; border-radius:9px; color:#8f99a8; background:#15171b; cursor:pointer; font-size:12px; line-height:1.8; }
+    .smart-drop b { color:#79a8ff; font-size:14px; }
+    .smart-drop-plus,.smart-drop-copy,.smart-drop-format { display:block; }
+    .smart-drop-copy { color:#eef2f7; font-size:13px; font-weight:600; }
+    .smart-drop-copy b { color:inherit; font-size:inherit; font-weight:inherit; }
+    .smart-drop-format { color:#788291; font-size:10px; font-weight:400; }
+    .smart-drop input { display:none; }
+    .smart-gallery-head { display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; color:#dfe4eb; font-size:12px; }
+    .smart-gallery { display:grid; grid-template-columns:repeat(auto-fill,minmax(104px,1fr)); gap:10px; max-height:310px; overflow:auto; }
+    .smart-thumb { position:relative; min-width:0; }
+    .smart-thumb img { width:100%; height:76px; display:block; object-fit:cover; border-radius:7px; border:1px solid #30343c; }
+    .smart-thumb span { display:block; margin-top:5px; overflow:hidden; color:#aeb7c5; font-size:10px; text-overflow:ellipsis; white-space:nowrap; }
+    .smart-thumb button { position:absolute; top:5px; right:5px; width:21px; height:21px; padding:0; border:0; border-radius:5px; color:#fff; background:rgba(10,12,16,.72); opacity:0; }
+    .smart-thumb:hover button { opacity:1; }
+    .smart-empty { min-height:170px; display:grid; place-items:center; color:#707987; font-size:12px; }
+    .smart-toolbar { display:flex; align-items:center; gap:8px; padding:12px 14px; border-bottom:1px solid #2d3139; }
+    .smart-toolbar .spacer { flex:1; }
+    .smart-toolbar small { color:#7f8897; }
+    .smart-table-wrap { overflow:auto; }
+    .smart-table { width:100%; min-width:1420px; border-collapse:collapse; table-layout:fixed; }
+    .smart-table th { height:42px; padding:0 10px; color:#8f98a6; background:#15171b; font-size:11px; font-weight:500; text-align:left; }
+    .smart-table td { padding:9px 10px; border-top:1px solid #2d3139; vertical-align:middle; color:#e6eaf0; font-size:12px; }
+    .smart-id-header { display:flex; align-items:center; gap:8px; }
+    .smart-id-header small { max-width:108px; color:#8d97a7; font-size:10px; font-weight:400; line-height:1.3; white-space:normal; }
+    .smart-table .smart-row-image { width:62px; height:52px; object-fit:cover; border-radius:6px; }
+    .smart-image-cell { display:flex; align-items:center; gap:8px; min-width:150px; }
+    .smart-image-cell small { max-width:105px; color:#8993a3; font-size:10px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+    .smart-table input,.smart-table select,.smart-table textarea { width:100%; border:1px solid #343841; border-radius:6px; outline:0; color:#e9edf3; background:#202229; font-size:11px; }
+    .smart-table input,.smart-table select { height:34px; padding:0 8px; }
+    .smart-table textarea { min-height:52px; padding:7px 8px; resize:vertical; }
+    .smart-table input:focus,.smart-table select:focus,.smart-table textarea:focus { border-color:#5d8ff0; }
+    .smart-ai-layout { display:grid; grid-template-columns:minmax(0,1fr) 300px; gap:14px; }
+    .smart-ai-main,.smart-ai-aside { padding:18px; }
+    .smart-ai-main { min-height:360px; border-right:1px solid #2d3139; }
+    .smart-ai-main h3,.smart-ai-aside h3 { margin:0 0 8px; color:#eef1f6; font-size:15px; }
+    .smart-ai-main p,.smart-ai-aside p { color:#858e9d; font-size:11px; line-height:1.7; }
+    .ai-progress { height:8px; margin:18px 0 8px; overflow:hidden; border-radius:8px; background:#252932; }
+    .ai-progress i { display:block; width:0; height:100%; border-radius:8px; background:linear-gradient(90deg,#5b8cff,#7c6dff); transition:width .5s ease; }
+    .ai-progress.complete i { width:100%; }
+    .ai-summary-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-top:18px; }
+    .ai-summary-card { padding:14px; border:1px solid #30343c; border-radius:8px; background:#1b1e24; }
+    .ai-summary-card span,.ai-summary-card strong { display:block; }
+    .ai-summary-card span { color:#7f8998; font-size:10px; }
+    .ai-summary-card strong { margin-top:5px; color:#edf1f7; font-size:20px; }
+    .ai-suggestion { display:flex; gap:9px; margin-top:12px; padding:10px; border:1px solid #30343c; border-radius:7px; background:#1b1e24; }
+    .ai-suggestion img { width:52px; height:44px; object-fit:cover; border-radius:5px; }
+    .ai-suggestion strong { display:block; color:#dfe4eb; font-size:11px; }
+    .ai-suggestion small { color:#7f8998; font-size:10px; }
+    .smart-preview-summary { display:grid; grid-template-columns:repeat(4,1fr); gap:10px; padding:14px; border-bottom:1px solid #2d3139; }
+    .smart-preview-summary div { padding:12px; border:1px solid #30343c; border-radius:7px; background:#1b1e24; }
+    .smart-preview-summary span,.smart-preview-summary strong { display:block; }
+    .smart-preview-summary span { color:#7f8998; font-size:10px; }
+    .smart-preview-summary strong { margin-top:4px; color:#edf1f7; font-size:17px; }
+    .smart-footer { position:fixed; left:192px; right:20px; bottom:0; z-index:20; display:flex; justify-content:flex-end; gap:9px; margin:0; padding:14px; border:1px solid #2d3139; border-bottom:0; border-radius:9px 9px 0 0; background:rgba(23,25,30,.97); box-shadow:0 -8px 24px rgba(0,0,0,.28); backdrop-filter:blur(10px); }
+    @media (max-width:900px) { .smart-upload-layout,.smart-ai-layout { grid-template-columns:1fr; } .smart-ai-main { border-right:0; border-bottom:1px solid #2d3139; } .smart-step span { display:none; } .smart-footer { left:96px; } }
+    .template-card { display:flex; align-items:center; gap:14px; padding:14px; border:1px solid #343841; border-radius:8px; background:#191b20; }
+    .template-card > div { min-width:0; margin-right:auto; }
+    .template-card strong { display:block; margin-bottom:5px; color:#eef1f6; font-size:13px; }
+    .template-card small { display:block; color:#858e9d; font-size:11px; line-height:1.6; }
+    .template-fields { margin-top:6px; color:#aeb7c5; }
+    .batch-file-zone { min-height:104px; margin-top:14px; cursor:pointer; }
+    .batch-file-zone input { display:none; }
+    .batch-file-name { margin-top:9px; color:#8f99a7; font-size:11px; }
+    .batch-scope-field { display:grid; gap:7px; margin-top:14px; }
+    .batch-scope-field label { color:#dfe3e9; font-size:12px; }
+    .batch-scope-field select { width:100%; height:38px; }
+    .batch-export-scope { display:grid; gap:6px; padding:8px 10px 7px; border-top:1px solid #30343c; border-bottom:1px solid #30343c; }
+    .batch-export-scope label { color:#8993a2; font-size:10px; }
+    .batch-export-scope select { width:100%; height:30px; padding:0 8px; border:1px solid #343841; border-radius:5px; color:#e6e9ee; background:#22242a; font-size:11px; }
+    @media (max-width:900px) { .list-row { grid-template-columns:2fr .8fr 30px; } }
+    @media (max-width:640px) { .metric-input-grid { grid-template-columns:1fr; } .metric-import-row { align-items:flex-start; flex-wrap:wrap; } .metric-import-row > div { width:100%; } }
+    /* Elements removed per the annotated screenshots. */
+    .folder-panel { display:none; }
+    .library-layout { grid-template-columns:minmax(0,1fr); gap:0; }
+    .collection-heading > div:first-child { display:none; }
+    .collection-heading { min-height:52px; justify-content:flex-end; }
+    .card-title-row,.card-desc,.card-meta { display:none; }
+    .grid .style-card .card-body { padding:7px 9px 8px; }
+    .card-stats { border-top:0; padding:3px 0; }
+    .grid { display:none; }
+    .list { display:block; }
+    .pagination { min-height:54px; display:flex; align-items:center; justify-content:flex-end; gap:8px; color:#8d96a5; font-size:12px; }
+    .pagination-total { margin-right:4px; }
+    .page-size select { height:30px; padding:0 26px 0 9px; border:1px solid #343841; border-radius:5px; outline:0; color:#dce1e8; background:#202229; }
+    .pagination button { width:30px; height:30px; border:1px solid #343841; border-radius:5px; color:#dce1e8; background:#202229; font-size:18px; line-height:1; }
+    .pagination button:hover:not(:disabled) { color:#fff; border-color:#4f8df7; background:#29354a; }
+    .pagination button:disabled { cursor:not-allowed; opacity:.38; }
+    .page-current { min-width:48px; text-align:center; color:#c8ced7; }
+    .data-page { display:none; min-height:100vh; padding:24px 0 48px; }
+    .data-page.active { display:block; }
+    .data-page:target { display:block; }
+    .content:has(.data-page:target) .library-panel { display:none !important; }
+    .data-page-head { min-height:86px; display:flex; align-items:flex-end; justify-content:space-between; gap:20px; margin-bottom:18px; }
+    .data-page-head h1 { margin:8px 0 5px; color:#f1f4f8; font-size:22px; }
+    .data-page-head p { margin:0; color:#858e9d; font-size:12px; }
+    .data-back { padding:0; border:0; color:#87b4ff; background:transparent; font-size:12px; text-decoration:none; }
+    .data-back:hover { color:#b4d1ff; }
+    .data-page-head > .btn { min-width:104px; }
+    .data-table-wrap { overflow-x:auto; border:1px solid #2d3139; border-radius:8px; background:#181a1f; }
+    .data-table { width:100%; min-width:760px; border-collapse:collapse; table-layout:fixed; }
+    .data-table th { height:44px; padding:0 16px; color:#8d97a7; background:#15171b; font-size:12px; font-weight:500; text-align:left; }
+    .data-table td { height:78px; padding:10px 16px; border-top:1px solid #2d3139; color:#e6eaf0; font-size:13px; }
+    .data-table tbody tr:hover { background:#1d2026; }
+    .data-image { display:block; position:relative; width:72px; height:50px; border-radius:6px; overflow:hidden; object-fit:cover; object-position:center; }
+    .drawer:not(.open),.modal:not(.open) { visibility:hidden; }
+    .import-table input,.import-table select { width:100%; height:36px; padding:0 10px; border:1px solid #343841; border-radius:6px; outline:0; color:#eef1f6; background:#202229; }
+    .import-table input:focus,.import-table select:focus { border-color:#4f8df7; box-shadow:0 0 0 3px rgba(79,141,247,.12); }
+    .table-suffix { position:relative; }
+    .table-suffix input { padding-right:28px; }
+    .table-suffix span { position:absolute; right:10px; top:10px; color:#858f9e; }
+    .import-table th:first-child,.import-table td:first-child { width:120px; }
+    .image-cell { position:relative; }
+    .image-upload { position:relative; width:84px; height:56px; display:grid; place-items:center; overflow:hidden; border:1px dashed #454b56; border-radius:6px; color:#6ea1ff; background:#15171b; cursor:pointer; }
+    .image-upload:hover { border-color:#6ea1ff; background:#192131; }
+    .image-upload input { position:absolute; width:1px; height:1px; opacity:0; pointer-events:none; }
+    .image-upload img { width:100%; height:100%; object-fit:cover; }
+    .image-upload.has-image { border-style:solid; border-color:#343841; }
+    .image-upload-text { display:grid; place-items:center; gap:2px; font-size:11px; text-align:center; }
+    .image-upload-text b { font-size:18px; line-height:1; font-weight:400; }
+    .image-remove { position:absolute; top:5px; left:77px; width:20px; height:20px; display:none; place-items:center; padding:0; border:0; border-radius:50%; color:#fff; background:rgba(9,11,15,.78); font-size:15px; line-height:1; z-index:2; }
+    .image-cell.has-image .image-remove { display:grid; }
+    .image-remove:hover { background:#e04755; }
+    .export-table th:nth-child(1),.export-table td:nth-child(1) { width:150px; }
+    .export-table th:nth-child(2),.export-table td:nth-child(2) { width:120px; }
+    .collection-heading { display:none; }
+    .toolbar { min-height:44px; display:flex; align-items:center; gap:12px; }
+    .toolbar .action-toolbar { margin-left:auto; flex-wrap:nowrap; }
+    .list { overflow-x:auto; scrollbar-width:thin; scrollbar-color:#424852 transparent; }
+    .list:hover { scrollbar-color:#68717e transparent; }
+    .list::-webkit-scrollbar { height:8px; }
+    .list::-webkit-scrollbar-track { background:transparent; }
+    .list::-webkit-scrollbar-thumb { min-width:48px; border:2px solid transparent; border-radius:999px; background:#424852; background-clip:padding-box; }
+    .list:hover::-webkit-scrollbar-thumb { background:#68717e; background-clip:padding-box; }
+    .list::-webkit-scrollbar-thumb:hover { background:#818b99; background-clip:padding-box; }
+    .list::-webkit-scrollbar-corner { background:transparent; }
+    .list-row { min-width:1660px; grid-template-columns:42px 118px 74px 150px 92px 110px 88px 68px 68px 88px 160px 88px 160px 124px; gap:10px; padding-right:0; }
+    .list-check { width:15px; height:15px; margin:0; accent-color:#4f8df7; }
+    .row-id { color:#9da6b4; font-size:12px; font-variant-numeric:tabular-nums; }
+    .image-only .thumb { display:block; width:58px; height:44px; object-fit:cover; object-position:center; }
+    .detail-photo { width:100%; height:100%; background-size:cover; background-position:center; background-repeat:no-repeat; }
+    .detail-photo.no-image { position:relative; background:#14171c !important; }
+    .detail-photo.no-image::after { content:'暂无图片'; position:absolute; inset:0; display:grid; place-items:center; color:#727c8b; font-size:13px; }
+    .detail-hover-delete { position:absolute; top:10px; right:10px; width:32px; height:32px; display:none; place-items:center; padding:0; border:1px solid rgba(255,255,255,.16); border-radius:7px; color:#fff; background:rgba(12,14,18,.78); z-index:3; }
+    .detail-hover-delete svg { width:16px; height:16px; fill:none; stroke:currentColor; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round; }
+    .drawer.editing .detail-preview:not(.no-image):hover .detail-hover-delete { display:grid; }
+    .detail-edit-upload { position:absolute; inset:0; width:100%; height:100%; border-radius:0; cursor:pointer; z-index:2; }
+    .detail-edit-upload input { display:none; }
+    .drawer.editing .detail-preview:not(.no-image) .detail-edit-upload { display:none; }
+    .metric-value { color:#e6ebf2; font-variant-numeric:tabular-nums; }
+    .table-detail-btn,.table-edit-btn,.table-delete-btn { height:auto; padding:0; border:0; border-radius:0; color:#6ea1ff; background:transparent; font-size:12px; }
+    .table-detail-btn:hover,.table-edit-btn:hover { color:#9ec0ff; background:transparent; text-decoration:underline; }
+    .table-delete-btn { color:#ff7783; }
+    .table-delete-btn:hover { color:#ff9aa3; text-decoration:underline; }
+    .list-row.header > :last-child { position:sticky; right:0; z-index:4; align-self:stretch; display:grid; place-items:center start; background:#15171b; box-shadow:-10px 0 16px rgba(10,12,16,.72); }
+    .data-row > .table-actions { position:sticky; right:0; z-index:3; align-self:stretch; display:flex; align-items:center; gap:12px; background:#181a1f; box-shadow:-10px 0 16px rgba(10,12,16,.72); }
+    .product-library-panel[hidden] { display:none; }
+    .product-library-panel { min-height:100vh; }
+    .product-heading { display:flex; align-items:center; justify-content:flex-end; gap:10px; padding:24px 0 16px; }
+    .product-toolbar { display:flex; align-items:center; justify-content:space-between; gap:14px; margin-bottom:14px; }
+    .product-filters { display:flex; align-items:center; gap:10px; min-width:0; }
+    .product-search { width:340px; }
+    .product-table-wrap { overflow-x:auto; border:1px solid #2d3139; border-radius:9px; background:#181a1f; }
+    .product-table { width:100%; min-width:1280px; border-collapse:collapse; table-layout:fixed; }
+    .product-table th { height:44px; padding:0 14px; color:#8d97a7; background:#15171b; font-size:12px; font-weight:500; text-align:left; }
+    .product-table td { height:82px; padding:10px 14px; border-top:1px solid #2d3139; color:#e6eaf0; font-size:13px; }
+    .product-table tbody tr:hover { background:#1d2026; }
+    .product-table th:last-child,.product-table td:last-child { position:sticky; right:0; z-index:2; background:#181a1f; box-shadow:-10px 0 16px rgba(10,12,16,.55); }
+    .product-table th:last-child { z-index:3; background:#15171b; }
+    .product-images { display:flex; align-items:center; gap:4px; }
+    .product-images img { width:52px; height:44px; border:1px solid #30343c; border-radius:6px; object-fit:cover; }
+    .product-image-count { min-width:28px; height:24px; display:grid; place-items:center; margin-left:2px; border-radius:12px; color:#aeb7c5; background:#292d35; font-size:11px; }
+    .product-actions { display:flex; align-items:center; gap:12px; }
+    .product-link { padding:0; border:0; color:#6ea1ff; background:transparent; font-size:12px; }
+    .product-link:hover { color:#9ec0ff; text-decoration:underline; }
+    .product-link.danger { color:#ff7783; }
+    .product-upload-zone { min-height:110px; cursor:pointer; }
+    .product-upload-zone input { display:none; }
+    .product-upload-preview,.product-detail-gallery { display:flex; flex-wrap:wrap; gap:8px; margin-top:10px; }
+    .product-upload-thumb { position:relative; width:82px; height:62px; }
+    .product-upload-thumb img,.product-detail-gallery img { width:82px; height:62px; border:1px solid #30343c; border-radius:7px; object-fit:cover; }
+    .product-upload-thumb button { position:absolute; top:4px; right:4px; width:20px; height:20px; padding:0; border:0; border-radius:50%; color:#fff; background:rgba(10,12,16,.78); }
+    .product-detail-gallery { margin:0 0 18px; }
+    .product-detail-gallery img { width:calc(50% - 4px); height:132px; }
+    .product-empty { padding:32px; color:#7f8998; text-align:center; }
+    .drawer-editor { width:100%; height:38px; padding:0 10px; border:1px solid #343841; border-radius:6px; color:#eef1f6; background:#202229; }
+    .drawer-editor[readonly] { color:#8f96a3; background:#191b20; cursor:not-allowed; }
+    .detail-metric .drawer-editor { height:34px; font-size:14px; }
+    .drawer-edit-actions { position:sticky; bottom:0; display:flex; justify-content:flex-end; gap:8px; margin-top:20px; padding:14px 0 2px; background:#181a1f; }
+    .drawer.editing .detail-display,.drawer.editing #detailEdit { display:none; }
+    .drawer:not(.editing) .detail-editor,.drawer:not(.editing) .drawer-edit-actions { display:none; }
+    @media (max-width:900px) { .list-row { min-width:1520px; grid-template-columns:38px 108px 68px 140px 86px 102px 82px 64px 64px 82px 148px 82px 148px 120px; } }
+    @media (max-width:640px) { .data-page { padding-top:12px; } .data-page-head { align-items:flex-start; } .data-page-head h1 { font-size:19px; } }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <aside class="sidebar">
+      <div class="brand" aria-label="OLIGHT AIGC">
+        <svg class="olight-mark" viewBox="0 0 44 44" aria-hidden="true">
+          <circle cx="22" cy="22" r="17" fill="#0c5a68"/>
+          <ellipse cx="26" cy="22" rx="10.5" ry="17" fill="#17191d"/>
+          <path d="M26 5a17 17 0 0 1 0 34c6.2-3.4 9.3-9.1 9.3-17S32.2 8.4 26 5Z" fill="#20798c"/>
+        </svg>
+        <span class="olight-title">OLIGHT AIGC</span>
+      </div>
+      <div class="nav-section material-heading">素材管理</div>
+      <button class="nav-item" id="productLibraryNav">
+        <span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4.5 7.7 12 3.5l7.5 4.2v8.6L12 20.5l-7.5-4.2Z"/><path d="m4.8 7.8 7.2 4.1 7.2-4.1M12 12v8.1"/><path d="m8.3 5.6 7.4 4.2"/></svg></span>
+        <span>产品库</span>
+      </button>
+      <button class="nav-item active" id="styleLibraryNav">
+        <span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 3.5a8.5 8.5 0 1 0 0 17h1.2a1.8 1.8 0 0 0 0-3.6h-.7a1.6 1.6 0 0 1 0-3.2H15a5.5 5.5 0 0 0 5.5-5.5c0-2.8-3.7-4.7-8.5-4.7Z"/><circle cx="7.8" cy="10" r=".8"/><circle cx="10" cy="7" r=".8"/><circle cx="14" cy="6.8" r=".8"/><circle cx="17" cy="9" r=".8"/></svg></span>
+        <span>风格库</span>
+      </button>
+    </aside>
+
+    <main class="main">
+      <div class="content">
+        <section class="product-library-panel" id="productLibraryPanel" hidden>
+          <div class="page-path">素材管理&nbsp;&nbsp;/&nbsp;&nbsp;机型库</div>
+          <div class="product-heading">
+            <div class="batch-menu-wrap" id="productMoreWrap">
+              <button class="btn batch-toggle" id="productMoreToggle" type="button" aria-expanded="false"><span>更多</span><span class="chevron">⌄</span></button>
+              <div class="batch-menu" id="productMoreMenu">
+                <button id="productImport" type="button">导入</button>
+                <button id="productExport" type="button">导出</button>
+                <button class="danger" id="productBatchDelete" type="button" disabled aria-disabled="true">批量删除</button>
+              </div>
+            </div>
+            <button class="btn primary" id="createProduct" type="button"><span>＋</span>新增</button>
+          </div>
+          <div class="product-toolbar">
+            <div class="product-filters">
+              <label class="search product-search"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m15.5 15.5 4 4"/></svg><input id="productSearch" placeholder="搜索机型名称、ID、创建人、修改人" /></label>
+              <select class="select metric-select" id="productSort"><option value="newest">最新创建</option><option value="updated">最近更新</option></select>
+              <select class="select metric-select" id="productScope"><option value="all">全部范围</option><option value="team">团队可见</option><option value="personal">仅自己</option></select>
+            </div>
+          </div>
+          <div class="product-table-wrap">
+            <table class="product-table">
+              <colgroup><col style="width:44px"><col style="width:120px"><col style="width:170px"><col style="width:230px"><col style="width:110px"><col style="width:100px"><col style="width:165px"><col style="width:100px"><col style="width:165px"><col style="width:140px"></colgroup>
+              <thead><tr><th><input class="list-check" id="productSelectAll" type="checkbox" aria-label="全选机型"></th><th>ID</th><th>机型名称</th><th>图片</th><th>可见范围</th><th>创建人</th><th>创建时间</th><th>修改人</th><th>最近更新</th><th>操作</th></tr></thead>
+              <tbody id="productTableBody"></tbody>
+            </table>
+          </div>
+          <div class="pagination"><span class="pagination-total" id="productTotal">共 0 条</span><label class="page-size"><select id="productPageSize"><option value="5">5 条/页</option><option value="10">10 条/页</option></select></label><button type="button" id="productPrev">‹</button><span class="page-current" id="productPageCurrent">1 / 1</span><button type="button" id="productNext">›</button></div>
+        </section>
+        <section class="library-panel">
+          <div class="page-path">素材管理&nbsp;&nbsp;/&nbsp;&nbsp;风格库</div>
+          <div class="library-layout">
+            <aside class="folder-panel" aria-label="风格文件夹">
+              <div class="folder-panel-head">
+                <strong>风格分类</strong>
+                <button class="folder-add" id="newFolder" type="button">＋ 新建</button>
+              </div>
+              <label class="folder-search"><span>⌕</span><input placeholder="搜索分类名称" /></label>
+              <div class="folder-tree" id="folderTree">
+                <div class="folder-row root active" data-folder="全部风格"><span class="tree-spacer"></span><span class="tree-icon"><svg viewBox="0 0 24 24"><path d="M5 5v14M9 7v10M13 5v14M17 8v8M20 6v12"/></svg></span><span class="folder-name">全部风格</span></div>
+                <div class="folder-row" data-folder="广告素材库"><span class="tree-spacer"></span><span class="tree-icon"><svg viewBox="0 0 24 24"><path d="M3.5 6.5h6l2 2h9v10h-17Z"/></svg></span><span class="folder-name">广告素材库</span><button class="folder-more" aria-label="广告素材库更多操作">•••</button></div>
+                <div class="folder-row" data-folder="作品库"><span class="tree-spacer"></span><span class="tree-icon"><svg viewBox="0 0 24 24"><path d="M3.5 6.5h6l2 2h9v10h-17Z"/></svg></span><span class="folder-name">作品库</span><button class="folder-more" aria-label="作品库更多操作">•••</button></div>
+                <div class="folder-node"><div class="folder-row" data-folder="ArkPro"><button class="tree-caret" aria-label="展开ArkPro">›</button><span class="tree-icon"><svg viewBox="0 0 24 24"><path d="M3.5 6.5h6l2 2h9v10h-17Z"/></svg></span><span class="folder-name">ArkPro</span><button class="folder-more" aria-label="ArkPro更多操作">•••</button></div><div class="folder-children collapsed"></div></div>
+                <div class="folder-node"><div class="folder-row" data-folder="ArkPro Lite"><button class="tree-caret" aria-label="展开ArkPro Lite">›</button><span class="tree-icon"><svg viewBox="0 0 24 24"><path d="M3.5 6.5h6l2 2h9v10h-17Z"/></svg></span><span class="folder-name">ArkPro Lite</span><button class="folder-more" aria-label="ArkPro Lite更多操作">•••</button></div><div class="folder-children collapsed"></div></div>
+                <div class="folder-node"><div class="folder-row" data-folder="ArkPro Ultra"><button class="tree-caret" aria-label="展开ArkPro Ultra">›</button><span class="tree-icon"><svg viewBox="0 0 24 24"><path d="M3.5 6.5h6l2 2h9v10h-17Z"/></svg></span><span class="folder-name">ArkPro Ultra</span><button class="folder-more" aria-label="ArkPro Ultra更多操作">•••</button></div><div class="folder-children collapsed"></div></div>
+                <div class="folder-node"><div class="folder-row" data-folder="Oclip Pro S"><button class="tree-caret" aria-label="展开Oclip Pro S">›</button><span class="tree-icon"><svg viewBox="0 0 24 24"><path d="M3.5 6.5h6l2 2h9v10h-17Z"/></svg></span><span class="folder-name">Oclip Pro S</span><button class="folder-more" aria-label="Oclip Pro S更多操作">•••</button></div><div class="folder-children collapsed"></div></div>
+                <div class="folder-node"><div class="folder-row" data-folder="Seeker 4 Pro"><button class="tree-caret open" aria-label="收起Seeker 4 Pro">›</button><span class="tree-icon"><svg viewBox="0 0 24 24"><path d="M3.5 6.5h6l2 2h9v10h-17Z"/></svg></span><span class="folder-name">Seeker 4 Pro</span><button class="folder-more" aria-label="Seeker 4 Pro更多操作">•••</button></div><div class="folder-children"><div class="folder-row" data-folder="黑色"><span class="tree-spacer"></span><span class="tree-icon"><svg viewBox="0 0 24 24"><path d="M3.5 6.5h6l2 2h9v10h-17Z"/></svg></span><span class="folder-name">黑色</span><button class="folder-more" aria-label="黑色更多操作">•••</button></div></div></div>
+              </div>
+              <div class="folder-context" id="folderContext">
+                <button class="folder-action" data-folder-action="child">⊞ <span>新建子文件夹</span></button>
+                <button class="folder-action" data-folder-action="rename">／ <span>重命名</span></button>
+                <button class="folder-action danger" data-folder-action="delete">♲ <span>删除</span></button>
+              </div>
+            </aside>
+            <div class="library-content">
+              <div class="collection-heading">
+                <div><h2 id="collectionTitle">OLIGHT 团队</h2><p id="collectionCount">共 7 个风格素材</p></div>
+                <div class="action-toolbar">
+                <div class="batch-menu-wrap" id="moreMenuWrap">
+                  <button class="btn batch-toggle" id="batchMenuToggle" type="button" aria-expanded="false"><span>更多</span><span class="chevron">⌄</span></button>
+                  <div class="batch-menu" id="batchMenu">
+                    <button id="batchImportFile" type="button"><svg class="action-icon" viewBox="0 0 24 24"><path d="M12 15V4m0 0-4 4m4-4 4 4M5 14v6h14v-6"/></svg>导入</button>
+                    <button id="batchDownload" type="button"><svg class="action-icon" viewBox="0 0 24 24"><path d="M12 3v12m0 0 4-4m-4 4-4-4M5 19h14"/></svg>导出</button>
+                    <button class="danger" id="batchDelete" type="button" disabled aria-disabled="true"><svg class="action-icon" viewBox="0 0 24 24"><path d="M4 7h16M9 7V4h6v3m-8 0 1 13h8l1-13M10 11v5m4-5v5"/></svg>批量删除</button>
+                  </div>
+                </div>
+                <button class="btn primary" id="uploadStyle" type="button"><svg class="action-icon" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>新增</button>
+                <input class="upload-input" type="file" id="styleInput" accept="image/*,.safetensors,.ckpt" multiple />
+                </div>
+              </div>
+          <div class="toolbar">
+            <div class="filters">
+              <label class="search"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m15.5 15.5 4 4"/></svg><input id="searchInput" placeholder="搜索图片名称、风格类型、标签、创建人、修改人" /></label>
+              <select class="select metric-select" id="sortFilter"><option value="newest" selected>最新创建</option><option value="exposure">曝光最高</option><option value="ctr">CTR 最高</option><option value="purchase">购买最多</option></select>
+              <select class="select metric-select" id="scopeFilter"><option value="all" selected>全部范围</option><option value="team">团队可见</option><option value="personal">仅自己</option></select>
+            </div>
+          </div>
+
+          <div class="grid" id="styleGrid">
+            <article class="style-card" data-name="东方新奢机型摄影" data-scope="company" data-status="published" data-art="art-a">
+              <div class="cover"><div class="cover-main art art-a"></div><div class="cover-side"><div class="art art-d"></div><div class="art art-h"></div></div><button class="card-menu">•••</button></div>
+              <div class="card-body"><div class="card-title-row"><div class="card-title">东方新奢机型摄影</div></div><div class="card-desc">温润材质、克制留白、东方陈列美学</div><div class="card-meta"><span class="scope">▣ 企业风格</span><span>v3 · 326 次</span></div></div>
+            </article>
+            <article class="style-card" data-name="夏日社媒插画" data-scope="team" data-status="review" data-art="art-b">
+              <div class="cover"><div class="cover-main art art-b"></div><div class="cover-side"><div class="art art-c"></div><div class="art art-e"></div></div><button class="card-menu">•••</button></div>
+              <div class="card-body"><div class="card-title-row"><div class="card-title">夏日社媒插画</div></div><div class="card-desc">高饱和几何构成，适合年轻化活动传播</div><div class="card-meta"><span class="scope">♙ 市场团队</span><span>v1 · 48 次</span></div></div>
+            </article>
+            <article class="style-card" data-name="轻透人像视觉" data-scope="platform" data-status="published" data-art="art-c">
+              <div class="cover"><div class="cover-main art art-c"></div><div class="cover-side"><div class="art art-e"></div><div class="art art-a"></div></div><button class="card-menu">•••</button></div>
+              <div class="card-body"><div class="card-title-row"><div class="card-title">轻透人像视觉</div></div><div class="card-desc">柔和自然光、低对比肤色与空气感构图</div><div class="card-meta"><span class="scope">◇ 平台公共</span><span>v5 · 452 次</span></div></div>
+            </article>
+            <article class="style-card" data-name="自然主义生活方式" data-scope="company" data-status="published" data-art="art-d">
+              <div class="cover"><div class="cover-main art art-d"></div><div class="cover-side"><div class="art art-a"></div><div class="art art-g"></div></div><button class="card-menu">•••</button></div>
+              <div class="card-body"><div class="card-title-row"><div class="card-title">自然主义生活方式</div></div><div class="card-desc">自然材质、低饱和色彩、生活化瞬间</div><div class="card-meta"><span class="scope">▣ 企业风格</span><span>v2 · 189 次</span></div></div>
+            </article>
+            <article class="style-card" data-name="柔雾美妆主视觉" data-scope="company" data-status="draft" data-art="art-e">
+              <div class="cover"><div class="cover-main art art-e"></div><div class="cover-side"><div class="art art-c"></div><div class="art art-f"></div></div><button class="card-menu">•••</button></div>
+              <div class="card-body"><div class="card-title-row"><div class="card-title">柔雾美妆主视觉</div></div><div class="card-desc">柔粉渐变、通透质感、精致商业布光</div><div class="card-meta"><span class="scope">▣ 企业风格</span><span>v1 · 未发布</span></div></div>
+            </article>
+            <article class="style-card" data-name="霓虹未来运动" data-scope="personal" data-status="training" data-art="art-f">
+              <div class="cover"><div class="cover-main art art-f"></div><div class="cover-side"><div class="art art-b"></div><div class="art art-h"></div></div><button class="card-menu">•••</button></div>
+              <div class="card-body"><div class="card-title-row"><div class="card-title">霓虹未来运动</div></div><div class="card-desc">赛博霓虹、强动势、未来运动材质</div><div class="card-meta"><span class="scope">● 仅自己</span><span>预计 12 分钟</span></div></div>
+            </article>
+            <article class="style-card" data-name="现代家居目录" data-scope="team" data-status="published" data-art="art-g">
+              <div class="cover"><div class="cover-main art art-g"></div><div class="cover-side"><div class="art art-d"></div><div class="art art-a"></div></div><button class="card-menu">•••</button></div>
+              <div class="card-body"><div class="card-title-row"><div class="card-title">现代家居目录</div></div><div class="card-desc">编辑式排版、建筑光影、清晰材质表现</div><div class="card-meta"><span class="scope">♙ 电商团队</span><span>v4 · 211 次</span></div></div>
+            </article>
+            <article class="style-card" data-name="鎏金节日礼赠" data-scope="platform" data-status="published" data-art="art-h">
+              <div class="cover"><div class="cover-main art art-h"></div><div class="cover-side"><div class="art art-e"></div><div class="art art-b"></div></div><button class="card-menu">•••</button></div>
+              <div class="card-body"><div class="card-title-row"><div class="card-title">鎏金节日礼赠</div></div><div class="card-desc">黑金配色、礼赠陈列、节庆高端质感</div><div class="card-meta"><span class="scope">◇ 平台公共</span><span>v2 · 60 次</span></div></div>
+            </article>
+          </div>
+
+          <div class="list" id="styleList">
+            <div class="list-row header"><span><input class="list-check" type="checkbox" id="listSelectAll" aria-label="全选当前页" /></span><span>ID</span><span>图片</span><span>图片名称</span><span>风格类型</span><span>可见范围</span><span>曝光</span><span>CTR</span><span>购买</span><span>创建人</span><span>创建时间</span><span>修改人</span><span>最近更新</span><span>操作</span></div>
+          </div>
+          <div class="pagination" id="pagination">
+            <span class="pagination-total" id="paginationTotal">共 0 条</span>
+            <label class="page-size"><select id="pageSize"><option value="5">5 条/页</option><option value="10">10 条/页</option><option value="20">20 条/页</option></select></label>
+            <button type="button" id="prevPage" aria-label="上一页">‹</button>
+            <span class="page-current" id="pageCurrent">1 / 1</span>
+            <button type="button" id="nextPage" aria-label="下一页">›</button>
+          </div>
+          <div class="empty" id="emptyState"><strong>没有找到匹配的风格</strong>尝试更换关键词或筛选条件</div>
+            </div>
+          </div>
+        </section>
+        <section class="data-page" id="exportDataPage" aria-hidden="true">
+          <div class="data-page-head"><div><a class="data-back" id="backExportPage" href="#">‹ 返回风格库</a><h1>导出数据</h1><p>导出前预览风格图片及对应的机型效果数据。</p></div><button class="btn primary" type="button" id="confirmBatchExport">导出 Excel</button></div>
+          <div class="data-table-wrap"><table class="data-table export-table"><thead><tr><th>ID</th><th>图片</th><th>图片名称</th><th>归属机型</th><th>曝光</th><th>CTR</th><th>购买数</th></tr></thead><tbody>
+            <tr><td>STY-2026-001</td><td><img class="data-image" src="assets/product-style-01.jpg" alt="户外手持紫色机型" /></td><td>product-style-01.jpg</td><td>ArkPro</td><td>18,640</td><td>6.8%</td><td>236</td></tr>
+            <tr><td>STY-2026-002</td><td><img class="data-image" src="assets/product-style-02.jpg" alt="绿叶间紫色机型" /></td><td>product-style-02.jpg</td><td>ArkPro Lite</td><td>9,280</td><td>4.6%</td><td>88</td></tr>
+            <tr><td>STY-2026-003</td><td><img class="data-image" src="assets/product-style-03.jpg" alt="苔藓石面多色机型组合" /></td><td>product-style-03.jpg</td><td>ArkPro Ultra</td><td>12,350</td><td>5.3%</td><td>142</td></tr>
+            <tr><td>STY-2026-004</td><td><img class="data-image" src="assets/product-style-04.jpg" alt="黑色背景多色机型组合" /></td><td>product-style-04.jpg</td><td>Oclip Pro S</td><td>7,640</td><td>3.9%</td><td>67</td></tr>
+            <tr><td>STY-2026-005</td><td><img class="data-image" src="assets/product-style-05.jpg" alt="山野手持紫色机型" /></td><td>product-style-05.jpg</td><td>Seeker 4 Pro</td><td>4,380</td><td>2.7%</td><td>31</td></tr>
+          </tbody></table></div>
+        </section>
+        <section class="data-page smart-import-page" id="smartImportPage" aria-hidden="true">
+          <div class="smart-import-head">
+            <div><button class="data-back" id="backSmartImport" type="button">‹ 返回风格库</button><h1>批量导入风格</h1></div>
+          </div>
+          <div class="smart-stepper" id="smartStepper">
+            <div class="smart-step active" data-step="1"><b>1</b><span>导入数据与图片</span></div>
+            <div class="smart-step" data-step="2"><b>2</b><span>表格化编辑</span></div>
+          </div>
+          <div class="smart-panel" id="smartUploadPanel">
+            <div class="smart-data-import">
+              <div class="smart-data-import-head">
+                <div class="smart-data-import-main"><strong>批量导入文本内容</strong><p>上传表格后，系统将按照“图片名称”与下方批量上传的图片自动匹配。</p></div>
+                <div class="smart-data-import-actions"><span class="smart-data-status" id="smartDataStatus">尚未导入数据</span><button class="btn" id="downloadSmartTemplate" type="button">下载模板</button></div>
+              </div>
+              <div class="smart-data-upload-row">
+                <label class="smart-data-drop" for="smartDataInput"><span><span class="smart-data-drop-icon">＋</span><b>添加文件</b><small>支持 .xls、.xlsx、.csv</small></span><input id="smartDataInput" type="file" accept=".csv,.xls,.xlsx,text/csv" /></label>
+                <div class="smart-data-guide"><p>表格字段</p><div class="smart-data-fields"><span>ID</span><span>图片名称</span><span>风格类型</span><span>归属机型</span><span>可见范围</span><span>曝光</span><span>CTR</span><span>购买</span></div></div>
+              </div>
+            </div>
+            <div class="smart-upload-layout">
+              <h3 class="smart-image-import-title">批量导入图片内容</h3>
+              <label class="smart-drop" for="smartImageInput"><div><b class="smart-drop-plus">＋</b><span class="smart-drop-copy"><b>批量选择图片</b>或将图片拖拽到此处</span><span class="smart-drop-format">支持 JPG、PNG、WEBP，单次最多 500 张</span></div><input id="smartImageInput" type="file" accept="image/jpeg,image/png,image/webp" multiple /></label>
+              <div><div class="smart-gallery-head"><span id="smartUploadCount">已上传 0 张</span><button class="btn" id="clearSmartImages" type="button">清空全部</button></div><div class="smart-gallery" id="smartGallery"><div class="smart-empty">请选择需要批量导入的图片</div></div></div>
+            </div>
+          </div>
+          <div class="smart-panel" id="smartEditPanel" hidden>
+            <div class="smart-toolbar"><span class="spacer"></span><small id="smartEditCount">共 0 条</small></div>
+            <div class="smart-table-wrap"><table class="smart-table"><thead><tr><th style="width:170px">图片 / 图片名称</th><th style="width:210px"><span class="smart-id-header"><span>ID</span><small>ID中有数据则为覆盖，为空则为新增</small></span></th><th style="width:130px">风格类型</th><th style="width:145px">归属机型</th><th style="width:120px">可见范围</th><th style="width:100px">曝光</th><th style="width:90px">CTR(%)</th><th style="width:90px">购买数</th><th style="width:64px">操作</th></tr></thead><tbody id="smartEditBody"></tbody></table></div>
+          </div>
+          <div class="smart-footer"><button class="btn" id="cancelSmartImport" type="button">取消</button><button class="btn primary" id="nextSmartStep" type="button">下一步</button></div>
+        </section>
+      </div>
+    </main>
+  </div>
+
+  <div class="backdrop" id="backdrop"></div>
+  <aside class="drawer" id="detailDrawer" aria-hidden="true">
+    <div class="drawer-head"><h2 id="drawerTitle">风格详情</h2><button class="close" id="closeDrawer">×</button></div>
+    <div class="drawer-body">
+      <div class="detail-preview" id="detailPreview"><div class="art art-a" id="detailArt"></div><button class="detail-hover-delete detail-editor" id="deleteDetailImage" type="button" aria-label="删除图片"><svg viewBox="0 0 24 24"><path d="M4 7h16M9 7V4h6v3m-8 0 1 13h8l1-13M10 11v5m4-5v5"/></svg></button><label class="upload-zone detail-edit-upload detail-editor" for="editImageInput"><div><b>点击上传</b> 或拖拽图片到此处<br>仅支持上传 1 张图片</div><input id="editImageInput" type="file" accept="image/*" /></label></div>
+      <div class="detail-title"><h3 class="detail-display" id="detailName">机型摄影</h3><select class="drawer-editor detail-editor" id="editStyleType"><option>机型摄影</option><option>社媒插画</option><option>人像摄影</option><option>生活方式</option><option>美妆视觉</option><option>运动视觉</option><option>家居摄影</option><option>节日视觉</option></select><button class="btn" id="detailEdit" type="button">编辑</button></div>
+      <div class="detail-metrics" aria-label="效果数据">
+        <div class="detail-metric"><span>曝光</span><strong class="detail-display" id="detailImpressions">18,640</strong><input class="drawer-editor detail-editor" id="editImpressions" type="number" min="0" /></div>
+        <div class="detail-metric"><span>CTR</span><strong class="detail-display" id="detailCtr">6.8%</strong><input class="drawer-editor detail-editor" id="editCtr" type="number" min="0" max="100" step="0.1" /></div>
+        <div class="detail-metric"><span>购买数</span><strong class="detail-display" id="detailPurchases">236</strong><input class="drawer-editor detail-editor" id="editPurchases" type="number" min="0" /></div>
+      </div>
+      <div class="section"><h4>基础信息</h4><div class="kv"><span>可见范围</span><span class="detail-display" id="detailScope">团队可见</span><select class="drawer-editor detail-editor" id="editScope"><option value="team">团队可见</option><option value="personal">仅自己</option></select></div><div class="kv"><span>创建人</span><span class="detail-display" id="detailCreator">陈可</span><input class="drawer-editor detail-editor" id="editCreator" readonly aria-readonly="true" title="创建人不可修改" /></div></div>
+      <div class="section"><h4>风格标签</h4><div class="tags"><span class="tag">机型摄影</span><span class="tag">东方美学</span><span class="tag">高级感</span><span class="tag">低饱和</span></div></div>
+      <div class="drawer-edit-actions"><button class="btn" id="cancelDetailEdit" type="button">取消</button><button class="btn primary" id="saveDetailEdit" type="button">保存</button></div>
+    </div>
+  </aside>
+
+  <aside class="drawer" id="productDrawer" aria-hidden="true">
+    <div class="drawer-head"><h2>机型详情</h2><button class="close" id="closeProductDrawer">×</button></div>
+    <div class="drawer-body">
+      <div class="product-detail-gallery" id="productDetailGallery"></div>
+      <div class="detail-title"><h3 id="productDetailName">ArkPro</h3><button class="btn" id="editProductFromDetail" type="button">编辑</button></div>
+      <div class="section"><h4>基础信息</h4><div class="kv"><span>ID</span><span id="productDetailId"></span></div><div class="kv"><span>可见范围</span><span id="productDetailScope"></span></div><div class="kv"><span>创建人</span><span id="productDetailCreator"></span></div><div class="kv"><span>创建时间</span><span id="productDetailCreated"></span></div><div class="kv"><span>修改人</span><span id="productDetailModifier"></span></div><div class="kv"><span>最近更新</span><span id="productDetailUpdated"></span></div></div>
+    </div>
+  </aside>
+
+  <section class="modal" id="productModal" aria-hidden="true">
+    <div class="modal-head"><h2 id="productModalTitle">新增机型</h2><button class="close" id="closeProductModal">×</button></div>
+    <div class="modal-body">
+      <div class="form">
+        <div class="field full"><label for="productNameInput">机型名称</label><input id="productNameInput" placeholder="请输入机型名称" /></div>
+        <div class="field full"><label for="productScopeInput">可见范围</label><select id="productScopeInput"><option value="team">团队可见</option><option value="personal">仅自己</option></select></div>
+        <div class="field full"><label>机型图片</label><label class="upload-zone product-upload-zone" for="productImagesInput"><div><b>＋ 选择图片</b><br>支持上传多张图片</div><input id="productImagesInput" type="file" accept="image/*" multiple /></label><div class="product-upload-preview" id="productUploadPreview"></div></div>
+      </div>
+    </div>
+    <div class="modal-foot"><button class="btn" id="cancelProductModal" type="button">取消</button><button class="btn primary" id="saveProduct" type="button">确认</button></div>
+  </section>
+
+  <section class="modal" id="createModal" aria-hidden="true">
+    <div class="modal-head"><h2 id="importModalTitle">新增风格</h2><button class="close" id="closeModal">×</button></div>
+    <div class="modal-body">
+      <div class="form">
+        <div class="field full"><label for="styleCategory">风格类型</label><select id="styleCategory"><option>摄影</option><option>插画</option><option>电商设计</option><option>品牌视觉</option></select></div>
+        <div class="field full"><label for="styleProduct">归属机型（选填）</label><select id="styleProduct"><option value="">不关联机型</option><option>ArkPro</option><option>ArkPro Lite</option><option>ArkPro Ultra</option><option>Oclip Pro S</option><option>Seeker 4 Pro</option></select></div>
+        <div class="field full"><label for="newStyleScope">可见范围</label><select id="newStyleScope"><option value="team">团队可见</option><option value="personal">仅自己</option></select></div>
+        <div class="field full"><label>参考素材</label><div class="upload-zone"><div><b>点击上传</b> 或拖拽图片到此处<br>仅支持上传 1 张图片</div></div></div>
+        <div class="field full metric-entry">
+          <div class="metric-entry-title"><label>效果数据 <span>选填</span></label><small>用于风格排序和运营分析，后续仍可更新</small></div>
+          <div class="metric-input-grid">
+            <label><span>曝光量</span><input id="metricImpressions" type="number" min="0" placeholder="例如 120000" /></label>
+            <label><span>CTR</span><div class="suffix-input"><input id="metricCtr" type="number" min="0" max="100" step="0.1" placeholder="例如 3.2" /><i>%</i></div></label>
+            <label><span>购买数</span><input id="metricPurchases" type="number" min="0" placeholder="例如 856" /></label>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-foot"><button class="btn" id="cancelCreate">取消</button><button class="btn primary" id="submitCreate">确认</button></div>
+  </section>
+  <section class="modal folder-modal" id="folderModal" aria-hidden="true">
+    <div class="modal-head"><h2 id="folderModalTitle">新建文件夹</h2><button class="close" id="closeFolderModal">×</button></div>
+    <div class="modal-body"><div class="form"><div class="field"><label for="folderName">文件夹名称</label><input id="folderName" placeholder="请输入文件夹名称" /></div></div></div>
+    <div class="modal-foot"><button class="btn" id="cancelFolder">取消</button><button class="btn primary" id="saveFolder">确定</button></div>
+  </section>
+  <section class="modal delete-confirm-modal" id="deleteConfirmModal" aria-hidden="true">
+    <div class="modal-head"><h2 id="deleteConfirmTitle">确认删除</h2><button class="close" id="closeDeleteConfirm">×</button></div>
+    <div class="modal-body"><strong id="deleteConfirmHeadline">确定要删除该风格吗？</strong><span id="deleteConfirmMessage">删除后将无法恢复，请谨慎操作。</span></div>
+    <div class="modal-foot"><button class="btn" id="cancelDeleteConfirm" type="button">取消</button><button class="btn confirm-danger" id="submitDeleteConfirm" type="button">确认</button></div>
+  </section>
+  <div class="toast" id="toast" role="status"></div>
+
+  <script>
+    const cards = [...document.querySelectorAll('.style-card')];
+    const tabs = [...document.querySelectorAll('.tab')];
+    const searchInput = document.getElementById('searchInput');
+    const sortFilter = document.getElementById('sortFilter');
+    const scopeFilter = document.getElementById('scopeFilter');
+    const grid = document.getElementById('styleGrid');
+    const list = document.getElementById('styleList');
+    const empty = document.getElementById('emptyState');
+    const backdrop = document.getElementById('backdrop');
+    const drawer = document.getElementById('detailDrawer');
+    const modal = document.getElementById('createModal');
+    const folderModal = document.getElementById('folderModal');
+    const deleteConfirmModal = document.getElementById('deleteConfirmModal');
+    const folderContext = document.getElementById('folderContext');
+    document.querySelector('.toolbar').appendChild(document.querySelector('.action-toolbar'));
+    const paginationTotal = document.getElementById('paginationTotal');
+    const pageSizeControl = document.getElementById('pageSize');
+    const pageCurrent = document.getElementById('pageCurrent');
+    const prevPage = document.getElementById('prevPage');
+    const nextPage = document.getElementById('nextPage');
+    let library = 'team';
+    let currentPage = 1;
+    let pageSize = Number(pageSizeControl.value);
+    let selectedFolderRow = null;
+    let folderMode = 'new';
+
+    function statusLabel(value) { return { published: '已发布', review: '待审核', draft: '草稿', training: '训练中' }[value] || value; }
+    function scopeLabel(card) { return card.dataset.scope === 'personal' ? '仅自己' : '团队可见'; }
+    function showToast(message) { const toast = document.getElementById('toast'); toast.textContent = message; toast.classList.add('show'); clearTimeout(window.toastTimer); window.toastTimer = setTimeout(() => toast.classList.remove('show'), 1800); }
+    function metricMatch(value, filter, mediumMin, highMin) {
+      if (filter === 'all') return true;
+      if (filter === 'high') return value >= highMin;
+      if (filter === 'medium') return value >= mediumMin && value < highMin;
+      return value < mediumMin;
+    }
+    function renderPagination() {
+      const rows = [...list.querySelectorAll('.data-row')];
+      const matchedRows = rows.filter(row => row.dataset.filtered === 'true');
+      const pageCount = Math.max(1, Math.ceil(matchedRows.length / pageSize));
+      currentPage = Math.min(currentPage, pageCount);
+      const start = (currentPage - 1) * pageSize;
+      rows.forEach(row => { row.style.display = 'none'; });
+      matchedRows.slice(start, start + pageSize).forEach(row => { row.style.display = ''; });
+      paginationTotal.textContent = `共 ${matchedRows.length} 条`;
+      pageCurrent.textContent = `${currentPage} / ${pageCount}`;
+      prevPage.disabled = currentPage <= 1;
+      nextPage.disabled = currentPage >= pageCount;
+      document.getElementById('listSelectAll').checked = false;
+    }
+    function applyFilters() {
+      const query = searchInput.value.trim().toLowerCase();
+      const selectedScope = scopeFilter.value;
+      let visible = 0;
+      cards.forEach(card => {
+        const inLibrary = true;
+        const scopeOk = selectedScope === 'all' || (selectedScope === 'personal' ? card.dataset.scope === 'personal' : card.dataset.scope !== 'personal');
+        const ok = card.dataset.deleted !== 'true' && inLibrary && scopeOk && (card.dataset.name.toLowerCase().includes(query) || card.dataset.imageName.toLowerCase().includes(query));
+        card.style.display = ok ? '' : 'none'; if (ok) visible++;
+      });
+      [...list.querySelectorAll('.data-row')].forEach(row => {
+        const inLibrary = true;
+        const scopeOk = selectedScope === 'all' || (selectedScope === 'personal' ? row.dataset.scope === 'personal' : row.dataset.scope !== 'personal');
+        const ok = inLibrary && scopeOk && (row.dataset.name.toLowerCase().includes(query) || row.dataset.imageName.toLowerCase().includes(query));
+        row.dataset.filtered = String(ok);
+      });
+      const sorter = sortFilter.value;
+      const sortedCards = [...cards].sort((a,b) => sorter === 'exposure' ? Number(b.dataset.impressions)-Number(a.dataset.impressions) : sorter === 'ctr' ? Number(b.dataset.ctr)-Number(a.dataset.ctr) : sorter === 'purchase' ? Number(b.dataset.purchases)-Number(a.dataset.purchases) : Number(a.dataset.age)-Number(b.dataset.age));
+      sortedCards.forEach(card => grid.appendChild(card));
+      const sortedRows = [...list.querySelectorAll('.data-row')].sort((a,b) => sorter === 'exposure' ? Number(b.dataset.impressions)-Number(a.dataset.impressions) : sorter === 'ctr' ? Number(b.dataset.ctr)-Number(a.dataset.ctr) : sorter === 'purchase' ? Number(b.dataset.purchases)-Number(a.dataset.purchases) : Number(a.dataset.age)-Number(b.dataset.age));
+      sortedRows.forEach(row => list.appendChild(row));
+      renderPagination();
+      empty.style.display = visible ? 'none' : 'block';
+      updateBatchDeleteState();
+    }
+    tabs.forEach(tab => tab.addEventListener('click', () => {
+      tabs.forEach(t => t.classList.remove('active')); tab.classList.add('active'); library = tab.dataset.library;
+      document.getElementById('collectionTitle').textContent = library === 'personal' ? '我的风格' : 'OLIGHT 团队';
+      document.getElementById('collectionCount').textContent = library === 'personal' ? '共 1 个风格素材' : '共 7 个风格素材';
+      currentPage = 1;
+      applyFilters();
+    }));
+    searchInput.addEventListener('input', () => { currentPage = 1; applyFilters(); });
+    sortFilter.addEventListener('change', () => { currentPage = 1; applyFilters(); });
+    scopeFilter.addEventListener('change', () => { currentPage = 1; applyFilters(); });
+    pageSizeControl.addEventListener('change', () => { pageSize = Number(pageSizeControl.value); currentPage = 1; renderPagination(); });
+    prevPage.addEventListener('click', () => { if (currentPage > 1) { currentPage--; renderPagination(); } });
+    nextPage.addEventListener('click', () => { currentPage++; renderPagination(); });
+
+    const performanceData = [
+      { impressions: 18640, ctr: 6.8, purchases: 236 },
+      { impressions: 9280, ctr: 4.6, purchases: 88 },
+      { impressions: 12350, ctr: 5.3, purchases: 142 },
+      { impressions: 7640, ctr: 3.9, purchases: 67 },
+      { impressions: 4380, ctr: 2.7, purchases: 31 },
+      { impressions: 15820, ctr: 7.1, purchases: 204 },
+      { impressions: 6840, ctr: 3.4, purchases: 54 },
+      { impressions: 10960, ctr: 5.7, purchases: 119 }
+    ];
+    const updateDates = ['2026-06-24 17:20:42','2026-06-23 16:12:18','2026-06-22 14:35:06','2026-06-21 11:48:32','2026-06-20 09:26:45','2026-06-19 18:04:27','2026-06-18 15:17:53','2026-06-17 10:42:16'];
+    const createDates = ['2026-06-20 09:12:36','2026-06-19 10:25:18','2026-06-18 14:08:42','2026-06-17 11:37:09','2026-06-16 16:20:31','2026-06-15 13:45:27','2026-06-14 15:18:53','2026-06-13 10:32:16'];
+    const styleTypes = ['机型摄影','社媒插画','人像摄影','生活方式','美妆视觉','运动视觉','家居摄影','节日视觉'];
+    const creators = ['陈可','李唯','系统创建','林默'];
+    const modifiers = ['李唯','陈可','林默','系统创建'];
+    const productImages = [
+      'assets/product-style-01.jpg',
+      'assets/product-style-02.jpg',
+      'assets/product-style-03.jpg',
+      'assets/product-style-04.jpg',
+      'assets/product-style-05.jpg'
+    ];
+    cards.forEach((card, index) => {
+      const metrics = performanceData[index];
+      const imageName = productImages[index % productImages.length].split('/').pop();
+      Object.assign(card.dataset, { styleType: styleTypes[index], creator: creators[index % creators.length], modifier: modifiers[index % modifiers.length], impressions: metrics.impressions, ctr: metrics.ctr, purchases: metrics.purchases, age: index + 1, order: index, image: productImages[index % productImages.length], imageName });
+      const statBar = document.createElement('div'); statBar.className = 'card-stats';
+      statBar.innerHTML = `<div class="card-stat"><span>曝光</span><b>${metrics.impressions >= 10000 ? (metrics.impressions / 10000).toFixed(1) + '万' : metrics.impressions}</b></div><div class="card-stat"><span>CTR</span><b>${metrics.ctr}%</b></div><div class="card-stat"><span>购买</span><b>${metrics.purchases}</b></div>`;
+      card.querySelector('.card-body').insertBefore(statBar, card.querySelector('.card-meta'));
+      const checkbox = document.createElement('input');
+      checkbox.type = 'checkbox'; checkbox.className = 'card-check'; checkbox.setAttribute('aria-label', `选择${card.dataset.name}`);
+      card.querySelector('.cover').appendChild(checkbox);
+      checkbox.addEventListener('click', e => e.stopPropagation());
+      checkbox.addEventListener('change', () => { card.classList.toggle('selected', checkbox.checked); updateBatchDeleteState(); });
+      const row = document.createElement('div');
+      row.className = 'list-row data-row';
+      Object.assign(row.dataset, { name: card.dataset.name, imageName, scope: card.dataset.scope, status: card.dataset.status, styleId: `STY-2026-${String(index + 1).padStart(3,'0')}`, styleType: styleTypes[index], impressions: metrics.impressions, ctr: metrics.ctr, purchases: metrics.purchases, age: index + 1, order: index });
+      row.innerHTML = `<span><input class="list-check row-check" type="checkbox" aria-label="选择${card.dataset.name}" /></span><span class="row-id">STY-2026-${String(index + 1).padStart(3,'0')}</span><div class="list-name image-only"><img class="thumb product-thumb" src="${card.dataset.image}" alt="${card.dataset.name}" /></div><span class="image-name-value">${imageName}</span><span class="type-value">${styleTypes[index]}</span><span class="scope-value">${scopeLabel(card)}</span><span class="metric-value impressions-value">${metrics.impressions.toLocaleString()}</span><span class="metric-value ctr-value">${metrics.ctr}%</span><span class="metric-value purchases-value">${metrics.purchases}</span><span class="creator-value">${card.dataset.creator}</span><span>${createDates[index]}</span><span>${card.dataset.modifier}</span><span>${updateDates[index]}</span><span class="table-actions"><button class="table-detail-btn" type="button">详情</button><button class="table-edit-btn" type="button">编辑</button><button class="table-delete-btn" type="button">删除</button></span>`;
+      const rowCheck = row.querySelector('.row-check');
+      rowCheck.addEventListener('click', e => e.stopPropagation());
+      rowCheck.addEventListener('change', () => { const cardCheck = card.querySelector('.card-check'); cardCheck.checked = rowCheck.checked; card.classList.toggle('selected', rowCheck.checked); updateBatchDeleteState(); });
+      row.querySelector('.table-detail-btn').addEventListener('click', e => { e.stopPropagation(); openDrawer(card); });
+      row.querySelector('.table-edit-btn').addEventListener('click', e => { e.stopPropagation(); openDrawer(card, true); });
+      row.querySelector('.table-delete-btn').addEventListener('click', e => {
+        e.stopPropagation();
+        openDeleteConfirm('确定要删除该数据吗？', `被删除数据 ID：${row.dataset.styleId}。删除后将无法恢复，请谨慎操作。`, () => {
+          card.dataset.deleted = 'true'; card.querySelector('.card-check').checked = false; row.remove(); applyFilters(); showToast('当前风格已删除');
+        });
+      });
+      row.addEventListener('click', e => { if (!e.target.classList.contains('row-check')) openDrawer(card); });
+      list.appendChild(row);
+      card.addEventListener('click', e => { if (!e.target.classList.contains('card-menu') && !e.target.classList.contains('card-check')) openDrawer(card); });
+      card.querySelector('.card-menu').addEventListener('click', e => { e.stopPropagation(); showToast('已打开更多操作：编辑、复制、下架'); });
+    });
+    document.getElementById('listSelectAll').addEventListener('change', e => {
+      [...list.querySelectorAll('.data-row')].filter(row => getComputedStyle(row).display !== 'none').forEach(row => {
+        const checkbox = row.querySelector('.row-check'); checkbox.checked = e.target.checked; checkbox.dispatchEvent(new Event('change', { bubbles: true }));
+      });
+    });
+
+    let activeDetailCard = null;
+    let pendingDetailImage = null;
+    const emptyImage = `data:image/svg+xml,${encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="120" height="90"><rect width="100%" height="100%" fill="#242832"/><text x="50%" y="52%" text-anchor="middle" fill="#77808d" font-size="12">暂无图片</text></svg>')}`;
+    function renderDetailImage(src) {
+      const art = document.getElementById('detailArt');
+      document.getElementById('detailPreview').classList.toggle('no-image', !src);
+      art.className = src ? 'detail-photo' : 'detail-photo no-image';
+      art.style.backgroundImage = src ? `url("${src}")` : 'none';
+    }
+    function setDrawerMode(editing) {
+      drawer.classList.toggle('editing', editing);
+      document.getElementById('drawerTitle').textContent = editing ? '编辑风格' : '风格详情';
+    }
+    function openDrawer(card, editing = false) {
+      activeDetailCard = card;
+      pendingDetailImage = null;
+      document.getElementById('editImageInput').value = '';
+      document.getElementById('detailName').textContent = card.dataset.styleType;
+      document.getElementById('detailImpressions').textContent = Number(card.dataset.impressions).toLocaleString();
+      document.getElementById('detailCtr').textContent = `${card.dataset.ctr}%`;
+      document.getElementById('detailPurchases').textContent = Number(card.dataset.purchases).toLocaleString();
+      document.getElementById('detailScope').textContent = scopeLabel(card);
+      document.getElementById('detailCreator').textContent = card.dataset.creator;
+      document.getElementById('editStyleType').value = card.dataset.styleType;
+      document.getElementById('editImpressions').value = card.dataset.impressions;
+      document.getElementById('editCtr').value = card.dataset.ctr;
+      document.getElementById('editPurchases').value = card.dataset.purchases;
+      document.getElementById('editScope').value = card.dataset.scope === 'personal' ? 'personal' : 'team';
+      document.getElementById('editCreator').value = card.dataset.creator;
+      renderDetailImage(card.dataset.image);
+      setDrawerMode(editing);
+      backdrop.classList.add('open'); drawer.classList.add('open'); drawer.setAttribute('aria-hidden','false');
+    }
+    document.getElementById('detailEdit').addEventListener('click', () => setDrawerMode(true));
+    document.getElementById('editImageInput').addEventListener('change', event => {
+      const file = event.target.files?.[0];
+      if (!file) return;
+      pendingDetailImage = URL.createObjectURL(file);
+      renderDetailImage(pendingDetailImage);
+    });
+    document.getElementById('deleteDetailImage').addEventListener('click', () => {
+      pendingDetailImage = '';
+      document.getElementById('editImageInput').value = '';
+      renderDetailImage('');
+    });
+    document.getElementById('cancelDetailEdit').addEventListener('click', () => openDrawer(activeDetailCard, false));
+    document.getElementById('saveDetailEdit').addEventListener('click', () => {
+      if (!activeDetailCard) return;
+      activeDetailCard.dataset.styleType = document.getElementById('editStyleType').value;
+      activeDetailCard.dataset.impressions = Number(document.getElementById('editImpressions').value || 0);
+      activeDetailCard.dataset.ctr = Number(document.getElementById('editCtr').value || 0);
+      activeDetailCard.dataset.purchases = Number(document.getElementById('editPurchases').value || 0);
+      activeDetailCard.dataset.scope = document.getElementById('editScope').value === 'personal' ? 'personal' : 'team';
+      if (pendingDetailImage !== null) activeDetailCard.dataset.image = pendingDetailImage;
+      const row = list.querySelector(`.data-row[data-name="${activeDetailCard.dataset.name}"]`);
+      if (row) {
+        Object.assign(row.dataset, { scope:activeDetailCard.dataset.scope, styleType:activeDetailCard.dataset.styleType, impressions:activeDetailCard.dataset.impressions, ctr:activeDetailCard.dataset.ctr, purchases:activeDetailCard.dataset.purchases });
+        row.querySelector('.type-value').textContent = activeDetailCard.dataset.styleType;
+        row.querySelector('.scope-value').textContent = scopeLabel(activeDetailCard);
+        row.querySelector('.impressions-value').textContent = Number(activeDetailCard.dataset.impressions).toLocaleString();
+        row.querySelector('.ctr-value').textContent = `${activeDetailCard.dataset.ctr}%`;
+        row.querySelector('.purchases-value').textContent = activeDetailCard.dataset.purchases;
+        row.querySelector('.creator-value').textContent = activeDetailCard.dataset.creator;
+        const rowImage = row.querySelector('.product-thumb');
+        rowImage.src = activeDetailCard.dataset.image || emptyImage;
+        rowImage.alt = activeDetailCard.dataset.image ? activeDetailCard.dataset.name : '暂无图片';
+      }
+      openDrawer(activeDetailCard, false); applyFilters(); showToast('风格数据已保存');
+    });
+    let pendingDeleteAction = null;
+    function openDeleteConfirm(headline, message, action) {
+      pendingDeleteAction = action;
+      document.getElementById('deleteConfirmHeadline').textContent = headline;
+      document.getElementById('deleteConfirmMessage').textContent = message;
+      backdrop.classList.add('open'); deleteConfirmModal.classList.add('open'); deleteConfirmModal.setAttribute('aria-hidden','false');
+    }
+    function closeDeleteConfirm() {
+      pendingDeleteAction = null;
+      deleteConfirmModal.classList.remove('open'); deleteConfirmModal.setAttribute('aria-hidden','true'); backdrop.classList.remove('open');
+    }
+    function closeOverlays() { drawer.classList.remove('open','editing'); modal.classList.remove('open'); folderModal.classList.remove('open'); deleteConfirmModal.classList.remove('open'); document.getElementById('productDrawer').classList.remove('open'); document.getElementById('productModal').classList.remove('open'); backdrop.classList.remove('open'); drawer.setAttribute('aria-hidden','true'); modal.setAttribute('aria-hidden','true'); folderModal.setAttribute('aria-hidden','true'); deleteConfirmModal.setAttribute('aria-hidden','true'); document.getElementById('productDrawer').setAttribute('aria-hidden','true'); document.getElementById('productModal').setAttribute('aria-hidden','true'); pendingDeleteAction = null; }
+    document.getElementById('closeDrawer').addEventListener('click', closeOverlays);
+    document.getElementById('closeModal').addEventListener('click', closeOverlays);
+    document.getElementById('closeFolderModal').addEventListener('click', closeOverlays);
+    document.getElementById('cancelCreate').addEventListener('click', closeOverlays);
+    document.getElementById('cancelFolder').addEventListener('click', closeOverlays);
+    document.getElementById('closeDeleteConfirm').addEventListener('click', closeDeleteConfirm);
+    document.getElementById('cancelDeleteConfirm').addEventListener('click', closeDeleteConfirm);
+    document.getElementById('submitDeleteConfirm').addEventListener('click', () => {
+      const action = pendingDeleteAction;
+      closeDeleteConfirm();
+      if (action) action();
+    });
+    backdrop.addEventListener('click', closeOverlays);
+    document.addEventListener('keydown', e => { if (e.key === 'Escape') closeOverlays(); });
+    document.querySelectorAll('.choice').forEach(choice => choice.addEventListener('click', () => { document.querySelectorAll('.choice').forEach(c => c.classList.remove('selected')); choice.classList.add('selected'); }));
+    document.getElementById('submitCreate').addEventListener('click', () => {
+      const impressions = Number(document.getElementById('metricImpressions').value || 0);
+      const ctr = Number(document.getElementById('metricCtr').value || 0);
+      const purchases = Number(document.getElementById('metricPurchases').value || 0);
+      if (ctr < 0 || ctr > 100) { showToast('CTR 请输入 0–100 之间的数值'); document.getElementById('metricCtr').focus(); return; }
+      if (purchases > impressions && impressions > 0) { showToast('购买数不能大于曝光量'); document.getElementById('metricPurchases').focus(); return; }
+      closeOverlays(); showToast('风格已新增，效果数据已同步');
+    });
+
+    function selectedCards() { return cards.filter(card => card.querySelector('.card-check')?.checked && card.style.display !== 'none'); }
+    const batchDeleteButton = document.getElementById('batchDelete');
+    function updateBatchDeleteState() {
+      const disabled = selectedCards().length === 0;
+      batchDeleteButton.disabled = disabled;
+      batchDeleteButton.setAttribute('aria-disabled', String(disabled));
+    }
+    const batchMenuToggle = document.getElementById('batchMenuToggle');
+    const batchMenu = document.getElementById('batchMenu');
+    function closeBatchMenu() {
+      batchMenu.classList.remove('open');
+      batchMenuToggle.classList.remove('open');
+      batchMenuToggle.setAttribute('aria-expanded', 'false');
+    }
+    batchMenuToggle.addEventListener('click', event => {
+      event.stopPropagation();
+      const isOpen = batchMenu.classList.toggle('open');
+      batchMenuToggle.classList.toggle('open', isOpen);
+      batchMenuToggle.setAttribute('aria-expanded', String(isOpen));
+    });
+    const libraryPanel = document.querySelector('.library-panel');
+    const exportDataPage = document.getElementById('exportDataPage');
+    const smartImportPage = document.getElementById('smartImportPage');
+    function openDataPage(page) {
+      closeBatchMenu(); libraryPanel.style.display = 'none';
+      document.querySelectorAll('.data-page').forEach(item => { item.classList.remove('active'); item.setAttribute('aria-hidden','true'); });
+      page.classList.add('active'); page.setAttribute('aria-hidden','false'); window.scrollTo(0,0);
+    }
+    function closeDataPages() {
+      document.querySelectorAll('.data-page').forEach(item => { item.classList.remove('active'); item.setAttribute('aria-hidden','true'); });
+      if (location.hash === '#exportDataPage') location.hash = '';
+      libraryPanel.style.display = '';
+      window.scrollTo(0,0);
+    }
+    function downloadCsv(filename, rows) {
+      const csv = '\ufeff' + rows.map(row => row.map(value => `"${String(value).replace(/"/g, '""')}"`).join(',')).join('\r\n');
+      const url = URL.createObjectURL(new Blob([csv], { type:'text/csv;charset=utf-8' }));
+      const link = document.createElement('a'); link.href = url; link.download = filename; document.body.appendChild(link); link.click(); link.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+    }
+    let smartImportStep = 1;
+    let smartItems = [];
+    let smartTextRows = [];
+    const smartEscape = value => String(value ?? '').replace(/[&<>"]/g, char => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[char]));
+    function seedSmartItems() {
+      if (smartItems.length) return;
+      const demoNames = ['product-style-01.jpg','product-style-02.jpg','product-style-03.jpg','product-style-04.jpg','product-style-05.jpg'];
+      smartItems = demoNames.map((filename,index) => ({ id:`STY-2026-${String(index + 1).padStart(3,'0')}`, filename, src:`assets/product-style-0${index + 1}.jpg`, name:'', description:'', type:'', product:'', scope:'team', impressions:0, ctr:0, purchases:0, ai:false }));
+    }
+    function renderSmartGallery() {
+      const gallery = document.getElementById('smartGallery');
+      document.getElementById('smartUploadCount').textContent = `已上传 ${smartItems.length} 张`;
+      gallery.innerHTML = smartItems.length ? smartItems.map((item,index) => `<div class="smart-thumb"><img src="${smartEscape(item.src)}" alt="${smartEscape(item.filename)}"><button type="button" data-remove-smart="${index}" aria-label="删除${smartEscape(item.filename)}">×</button><span>${smartEscape(item.filename)}</span></div>`).join('') : '<div class="smart-empty">请选择需要批量导入的图片</div>';
+    }
+    function smartSelect(value, options) { return options.map(option => `<option value="${smartEscape(option)}" ${value === option ? 'selected' : ''}>${option || '请选择'}</option>`).join(''); }
+    function renderSmartEditor() {
+      document.getElementById('smartEditCount').textContent = `共 ${smartItems.length} 条`;
+      document.getElementById('smartEditBody').innerHTML = smartItems.map((item,index) => `<tr data-smart-index="${index}"><td><div class="smart-image-cell"><img class="smart-row-image" src="${smartEscape(item.src)}" alt="${smartEscape(item.filename)}"><small title="${smartEscape(item.filename)}">${smartEscape(item.filename)}</small></div></td><td><input data-field="id" value="${smartEscape(item.id)}" placeholder="输入 ID"></td><td><select data-field="type">${smartSelect(item.type,['','机型摄影','社媒插画','人像摄影','生活方式','美妆视觉'])}</select></td><td><select data-field="product">${smartSelect(item.product,['','ArkPro','ArkPro Lite','ArkPro Ultra','Oclip Pro S','Seeker 4 Pro'])}</select></td><td><select data-field="scope">${smartSelect(item.scope,['team','personal']).replace('>team<','>团队可见<').replace('>personal<','>仅自己<')}</select></td><td><input data-field="impressions" type="number" min="0" value="${item.impressions}"></td><td><input data-field="ctr" type="number" min="0" max="100" step="0.1" value="${item.ctr}"></td><td><input data-field="purchases" type="number" min="0" value="${item.purchases}"></td><td><button class="table-delete-btn" data-remove-smart-row="${index}" type="button">删除</button></td></tr>`).join('');
+    }
+    function setSmartImportStep(step) {
+      smartImportStep = step;
+      ['smartUploadPanel','smartEditPanel'].forEach((id,index) => document.getElementById(id).hidden = index + 1 !== step);
+      document.querySelectorAll('#smartStepper .smart-step').forEach(item => { const value=Number(item.dataset.step); item.classList.toggle('active',value===step); item.classList.toggle('done',value<step); });
+      document.getElementById('nextSmartStep').textContent = ['下一步','确认'][step - 1];
+      if (step === 1) renderSmartGallery();
+      if (step === 2) renderSmartEditor();
+      window.scrollTo(0,0);
+    }
+    document.getElementById('batchImportFile').addEventListener('click', () => { seedSmartItems(); setSmartImportStep(1); openDataPage(smartImportPage); });
+    function parseSmartCsvLine(line) {
+      const values=[]; let value=''; let quoted=false;
+      for (let i=0;i<line.length;i+=1) { const char=line[i]; if (char==='"' && line[i+1]==='"' && quoted) { value+='"'; i+=1; } else if (char==='"') quoted=!quoted; else if (char===',' && !quoted) { values.push(value.trim()); value=''; } else value+=char; }
+      values.push(value.trim()); return values;
+    }
+    function syncSmartTextRows(filename='') {
+      let matched=0;
+      smartTextRows.forEach(row => { const item=smartItems.find(entry => entry.filename.toLowerCase() === row.filename.toLowerCase()); if (!item) return; matched+=1; Object.assign(item,row); });
+      document.getElementById('smartDataStatus').textContent = `已导入 ${filename || '数据表'} · ${smartTextRows.length} 条，匹配 ${matched} 张图片`;
+      renderSmartGallery();
+    }
+    function demoSmartTextRows() {
+      const types=['机型摄影','社媒插画','人像摄影','生活方式','美妆视觉'];
+      return smartItems.map((item,index) => ({ id:item.id || `STY-2026-${String(index + 1).padStart(3,'0')}`, filename:item.filename, type:types[index%types.length], product:['ArkPro','ArkPro Lite','ArkPro Ultra','Oclip Pro S','Seeker 4 Pro'][index%5], scope:index===4?'personal':'team', impressions:[18640,9280,12350,7640,4380][index%5], ctr:[6.8,4.6,5.3,3.9,2.7][index%5], purchases:[236,88,142,67,31][index%5] }));
+    }
+    document.getElementById('downloadSmartTemplate').addEventListener('click', () => downloadCsv('风格批量导入模板.csv', [['ID','图片名称','风格类型','归属机型','可见范围','曝光','CTR','购买'],['STY-2026-001','product-style-01.jpg','机型摄影','ArkPro','团队可见','18640','6.8','236']]));
+    document.getElementById('smartDataInput').addEventListener('change', event => {
+      const file=event.target.files?.[0]; if (!file) return;
+      const finish = rows => { smartTextRows=rows; syncSmartTextRows(file.name); showToast(`已导入 ${rows.length} 条文本数据`); event.target.value=''; };
+      if (!file.name.toLowerCase().endsWith('.csv')) { finish(demoSmartTextRows()); return; }
+      const reader=new FileReader(); reader.onload=() => { const lines=String(reader.result || '').replace(/^\uFEFF/,'').split(/\r?\n/).filter(line => line.trim()); if (lines.length<2) return finish([]); const headers=parseSmartCsvLine(lines[0]); const rows=lines.slice(1).map(line => { const values=parseSmartCsvLine(line); const data=Object.fromEntries(headers.map((header,index) => [header,values[index] || ''])); return { id:data.ID, filename:data['图片名称'], type:data['风格类型'], product:data['归属机型'], scope:data['可见范围'].includes('自己')?'personal':'team', impressions:Number(String(data['曝光']).replace(/,/g,''))||0, ctr:Number(String(data.CTR).replace('%',''))||0, purchases:Number(String(data['购买']).replace(/,/g,''))||0 }; }).filter(row => row.filename); finish(rows); }; reader.readAsText(file,'utf-8');
+    });
+    document.getElementById('smartImageInput').addEventListener('change', event => { [...(event.target.files || [])].forEach(file => smartItems.push({ id:'', filename:file.name, src:URL.createObjectURL(file), name:'', description:'', type:'', product:'', scope:'team', impressions:0, ctr:0, purchases:0, ai:false })); event.target.value=''; if (smartTextRows.length) syncSmartTextRows('数据表'); else renderSmartGallery(); });
+    document.getElementById('smartGallery').addEventListener('click', event => { const button=event.target.closest('[data-remove-smart]'); if (!button) return; smartItems.splice(Number(button.dataset.removeSmart),1); renderSmartGallery(); });
+    document.getElementById('clearSmartImages').addEventListener('click', () => { smartItems=[]; renderSmartGallery(); if (smartTextRows.length) document.getElementById('smartDataStatus').textContent=`已导入数据表 · ${smartTextRows.length} 条，匹配 0 张图片`; });
+    document.getElementById('smartEditBody').addEventListener('input', event => { const row=event.target.closest('[data-smart-index]'); const field=event.target.dataset.field; if (!row || !field) return; smartItems[Number(row.dataset.smartIndex)][field]=event.target.value; });
+    document.getElementById('smartEditBody').addEventListener('change', event => { const row=event.target.closest('[data-smart-index]'); const field=event.target.dataset.field; if (!row || !field) return; smartItems[Number(row.dataset.smartIndex)][field]=event.target.value; });
+    document.getElementById('smartEditBody').addEventListener('click', event => { const button=event.target.closest('[data-remove-smart-row]'); if (!button) return; smartItems.splice(Number(button.dataset.removeSmartRow),1); renderSmartEditor(); });
+    document.getElementById('nextSmartStep').addEventListener('click', () => { if (!smartItems.length) return showToast('请先批量上传图片'); if (smartImportStep < 2) { setSmartImportStep(smartImportStep + 1); } else { const total=smartItems.length; closeDataPages(); showToast(`已确认导入 ${total} 条风格数据`); } });
+    document.getElementById('cancelSmartImport').addEventListener('click', closeDataPages);
+    document.getElementById('backSmartImport').addEventListener('click', closeDataPages);
+    document.getElementById('batchDownload').addEventListener('click', () => {
+      closeBatchMenu();
+      const rows = [...list.querySelectorAll('.data-row')].filter(row => row.dataset.filtered === 'true');
+      downloadCsv(`风格数据导出_${new Date().toISOString().slice(0,10)}.csv`, [['ID','图片名称','风格类型','可见范围','曝光','CTR','购买'], ...rows.map(row => [row.dataset.styleId,row.dataset.imageName,row.dataset.styleType,row.dataset.scope === 'personal' ? '仅自己' : '团队可见',row.dataset.impressions,row.dataset.ctr,row.dataset.purchases])]);
+      showToast(`已导出当前筛选的 ${rows.length} 条数据`);
+    });
+    document.querySelectorAll('[data-close-data-page]').forEach(button => button.addEventListener('click', closeDataPages));
+    document.getElementById('confirmBatchExport').addEventListener('click', () => { showToast('已生成包含 5 条数据的 Excel 文件'); closeDataPages(); });
+    document.getElementById('batchDelete').addEventListener('click', () => {
+      closeBatchMenu();
+      const selected = selectedCards(); if (!selected.length) return showToast('请先选择需要删除的风格');
+      const selectedIds = selected.map(card => list.querySelector(`.data-row[data-name="${card.dataset.name}"]`)?.dataset.styleId).filter(Boolean);
+      openDeleteConfirm(`确定要删除选中的 ${selected.length} 条数据吗？`, `被删除数据 ID：${selectedIds.join('、')}。删除后将无法恢复，请谨慎操作。`, () => {
+        selected.forEach(card => { card.style.display = 'none'; card.querySelector('.card-check').checked = false; card.classList.remove('selected'); list.querySelector(`.data-row[data-name="${card.dataset.name}"]`)?.remove(); });
+        applyFilters();
+        showToast(`已删除 ${selected.length} 个风格（刷新页面可恢复 Demo 数据）`);
+      });
+    });
+    document.getElementById('uploadStyle').addEventListener('click', () => {
+      document.getElementById('newStyleScope').value = library; backdrop.classList.add('open'); modal.classList.add('open'); modal.setAttribute('aria-hidden','false');
+      setTimeout(() => document.getElementById('styleCategory').focus(), 50);
+    });
+    document.querySelector('.upload-zone').addEventListener('click', () => document.getElementById('styleInput').click());
+    document.getElementById('styleInput').addEventListener('change', e => {
+      const zone = document.querySelector('.upload-zone');
+      if (e.target.files.length) zone.innerHTML = `<div><b>已选择 ${e.target.files.length} 个文件</b><br>点击可重新选择风格图片</div>`;
+      showToast(`已选择 ${e.target.files.length} 个风格文件`);
+    });
+
+    function openFolderModal(mode, row = null) {
+      folderMode = mode; selectedFolderRow = row;
+      const title = mode === 'rename' ? '重命名文件夹' : mode === 'child' ? '新建子文件夹' : '新建文件夹';
+      document.getElementById('folderModalTitle').textContent = title;
+      document.getElementById('folderName').value = mode === 'rename' && row ? row.querySelector('.folder-name').textContent : '';
+      folderContext.classList.remove('open'); backdrop.classList.add('open'); folderModal.classList.add('open'); folderModal.setAttribute('aria-hidden','false');
+      setTimeout(() => document.getElementById('folderName').focus(), 50);
+    }
+    function folderRowMarkup(name) {
+      const row = document.createElement('div'); row.className = 'folder-row'; row.dataset.folder = name;
+      row.innerHTML = `<span class="tree-spacer"></span><span class="tree-icon"><svg viewBox="0 0 24 24"><path d="M3.5 6.5h6l2 2h9v10h-17Z"/></svg></span><span class="folder-name"></span><button class="folder-more" aria-label="${name}更多操作">•••</button>`;
+      row.querySelector('.folder-name').textContent = name; bindFolderRow(row); return row;
+    }
+    function bindFolderRow(row) {
+      row.addEventListener('click', e => { if (e.target.closest('.folder-more') || e.target.closest('.tree-caret')) return; document.querySelectorAll('.folder-row').forEach(item => item.classList.remove('active')); row.classList.add('active'); });
+      const more = row.querySelector('.folder-more');
+      if (more) more.addEventListener('click', e => { e.stopPropagation(); selectedFolderRow = row; document.querySelectorAll('.folder-more').forEach(item => item.classList.remove('open')); more.classList.add('open'); folderContext.style.top = `${row.offsetTop + row.offsetHeight}px`; folderContext.classList.add('open'); });
+      const caret = row.querySelector('.tree-caret');
+      if (caret) caret.addEventListener('click', e => { e.stopPropagation(); caret.classList.toggle('open'); row.parentElement.querySelector('.folder-children')?.classList.toggle('collapsed'); });
+    }
+    document.querySelectorAll('.folder-row').forEach(bindFolderRow);
+    document.getElementById('newFolder').addEventListener('click', () => openFolderModal('new'));
+    document.querySelectorAll('[data-folder-action]').forEach(action => action.addEventListener('click', () => {
+      const mode = action.dataset.folderAction;
+      if (mode === 'delete') {
+        if (!selectedFolderRow || selectedFolderRow.classList.contains('root')) return;
+        const name = selectedFolderRow.dataset.folder; const node = selectedFolderRow.closest('.folder-node');
+        (node || selectedFolderRow).remove(); folderContext.classList.remove('open'); showToast(`已删除文件夹“${name}”`); selectedFolderRow = null; return;
+      }
+      openFolderModal(mode, selectedFolderRow);
+    }));
+    document.getElementById('saveFolder').addEventListener('click', () => {
+      const name = document.getElementById('folderName').value.trim(); if (!name) return showToast('请输入文件夹名称');
+      if (folderMode === 'rename' && selectedFolderRow) { selectedFolderRow.dataset.folder = name; selectedFolderRow.querySelector('.folder-name').textContent = name; }
+      else if (folderMode === 'child' && selectedFolderRow) {
+        let children = selectedFolderRow.parentElement.querySelector(':scope > .folder-children');
+        if (!children) { children = document.createElement('div'); children.className = 'folder-children'; selectedFolderRow.insertAdjacentElement('afterend', children); }
+        children.classList.remove('collapsed'); children.appendChild(folderRowMarkup(name));
+      } else document.getElementById('folderTree').appendChild(folderRowMarkup(name));
+      closeOverlays(); showToast(folderMode === 'rename' ? '文件夹已重命名' : `已创建文件夹“${name}”`);
+    });
+    document.addEventListener('click', e => {
+      if (!e.target.closest('#moreMenuWrap')) closeBatchMenu();
+      if (!e.target.closest('.folder-context') && !e.target.closest('.folder-more')) { folderContext.classList.remove('open'); document.querySelectorAll('.folder-more').forEach(item => item.classList.remove('open')); }
+    });
+    const productLibraryPanel = document.getElementById('productLibraryPanel');
+    const productDrawer = document.getElementById('productDrawer');
+    const productModal = document.getElementById('productModal');
+    const productTableBody = document.getElementById('productTableBody');
+    const productData = [
+      { id:'PRO-2026-001', name:'ArkPro', images:['assets/product-style-01.jpg','assets/product-style-03.jpg','assets/product-style-04.jpg'], scope:'team', creator:'陈可', created:'2026-06-20 09:12:36', modifier:'李唯', updated:'2026-06-24 17:20:42' },
+      { id:'PRO-2026-002', name:'ArkPro Lite', images:['assets/product-style-02.jpg','assets/product-style-01.jpg'], scope:'team', creator:'李唯', created:'2026-06-19 10:25:18', modifier:'陈可', updated:'2026-06-23 16:12:18' },
+      { id:'PRO-2026-003', name:'ArkPro Ultra', images:['assets/product-style-03.jpg','assets/product-style-04.jpg','assets/product-style-05.jpg'], scope:'team', creator:'系统创建', created:'2026-06-18 14:08:42', modifier:'林默', updated:'2026-06-22 14:35:06' },
+      { id:'PRO-2026-004', name:'Oclip Pro S', images:['assets/product-style-04.jpg','assets/product-style-02.jpg'], scope:'personal', creator:'林默', created:'2026-06-17 11:37:09', modifier:'系统创建', updated:'2026-06-21 11:48:32' },
+      { id:'PRO-2026-005', name:'Seeker 4 Pro', images:['assets/product-style-05.jpg','assets/product-style-01.jpg','assets/product-style-02.jpg'], scope:'team', creator:'陈可', created:'2026-06-16 16:20:31', modifier:'李唯', updated:'2026-06-20 09:26:45' }
+    ];
+    let productPage = 1;
+    let productEditingIndex = null;
+    let productPendingImages = [];
+    let activeProductIndex = null;
+    const productEsc = value => String(value ?? '').replace(/[&<>\"]/g, char => ({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;'}[char]));
+    function filteredProducts() {
+      const query = document.getElementById('productSearch').value.trim().toLowerCase();
+      const scope = document.getElementById('productScope').value;
+      const sorter = document.getElementById('productSort').value;
+      return productData.map((item,index) => ({item,index})).filter(({item}) => (scope === 'all' || item.scope === scope) && [item.id,item.name,item.creator,item.modifier].some(value => value.toLowerCase().includes(query))).sort((a,b) => sorter === 'updated' ? b.item.updated.localeCompare(a.item.updated) : b.item.created.localeCompare(a.item.created));
+    }
+    function updateProductBatchState() {
+      const selected = productTableBody.querySelectorAll('.product-check:checked').length;
+      const button = document.getElementById('productBatchDelete');
+      button.disabled = !selected; button.setAttribute('aria-disabled',String(!selected));
+    }
+    function renderProducts() {
+      const filtered = filteredProducts();
+      const size = Number(document.getElementById('productPageSize').value);
+      const pages = Math.max(1,Math.ceil(filtered.length / size));
+      productPage = Math.min(productPage,pages);
+      const rows = filtered.slice((productPage - 1) * size,productPage * size);
+      productTableBody.innerHTML = rows.length ? rows.map(({item,index}) => `<tr data-product-index="${index}"><td><input class="list-check product-check" type="checkbox" aria-label="选择${productEsc(item.name)}"></td><td><span class="row-id">${productEsc(item.id)}</span></td><td><strong>${productEsc(item.name)}</strong></td><td><div class="product-images">${item.images.slice(0,3).map(src => `<img src="${productEsc(src)}" alt="${productEsc(item.name)}机型图片">`).join('')}${item.images.length > 3 ? `<span class="product-image-count">+${item.images.length - 3}</span>` : ''}</div></td><td>${item.scope === 'personal' ? '仅自己' : '团队可见'}</td><td>${productEsc(item.creator)}</td><td>${item.created}</td><td>${productEsc(item.modifier)}</td><td>${item.updated}</td><td><div class="product-actions"><button class="product-link" data-product-action="detail">详情</button><button class="product-link" data-product-action="edit">编辑</button><button class="product-link danger" data-product-action="delete">删除</button></div></td></tr>`).join('') : '<tr><td colspan="10"><div class="product-empty">没有找到匹配的机型</div></td></tr>';
+      document.getElementById('productTotal').textContent = `共 ${filtered.length} 条`;
+      document.getElementById('productPageCurrent').textContent = `${productPage} / ${pages}`;
+      document.getElementById('productPrev').disabled = productPage <= 1;
+      document.getElementById('productNext').disabled = productPage >= pages;
+      document.getElementById('productSelectAll').checked = false;
+      updateProductBatchState();
+    }
+    function renderProductUploadPreview() {
+      document.getElementById('productUploadPreview').innerHTML = productPendingImages.map((src,index) => `<div class="product-upload-thumb"><img src="${productEsc(src)}" alt="待上传机型图片"><button type="button" data-remove-product-image="${index}" aria-label="删除图片">×</button></div>`).join('');
+    }
+    function openProductModal(index = null) {
+      productEditingIndex = index;
+      const item = index === null ? null : productData[index];
+      document.getElementById('productModalTitle').textContent = item ? '编辑机型' : '新增机型';
+      document.getElementById('productNameInput').value = item?.name || '';
+      document.getElementById('productScopeInput').value = item?.scope || 'team';
+      document.getElementById('productImagesInput').value = '';
+      productPendingImages = item ? [...item.images] : [];
+      renderProductUploadPreview();
+      productDrawer.classList.remove('open'); productDrawer.setAttribute('aria-hidden','true');
+      backdrop.classList.add('open'); productModal.classList.add('open'); productModal.setAttribute('aria-hidden','false');
+      setTimeout(() => document.getElementById('productNameInput').focus(),50);
+    }
+    function openProductDrawer(index) {
+      activeProductIndex = index;
+      const item = productData[index];
+      document.getElementById('productDetailGallery').innerHTML = item.images.map(src => `<img src="${productEsc(src)}" alt="${productEsc(item.name)}机型图片">`).join('');
+      document.getElementById('productDetailName').textContent = item.name;
+      document.getElementById('productDetailId').textContent = item.id;
+      document.getElementById('productDetailScope').textContent = item.scope === 'personal' ? '仅自己' : '团队可见';
+      document.getElementById('productDetailCreator').textContent = item.creator;
+      document.getElementById('productDetailCreated').textContent = item.created;
+      document.getElementById('productDetailModifier').textContent = item.modifier;
+      document.getElementById('productDetailUpdated').textContent = item.updated;
+      backdrop.classList.add('open'); productDrawer.classList.add('open'); productDrawer.setAttribute('aria-hidden','false');
+    }
+    document.getElementById('productLibraryNav').addEventListener('click', () => { window.location.href = 'product-library.html'; });
+    document.getElementById('styleLibraryNav').addEventListener('click', () => {
+      productLibraryPanel.hidden = true; libraryPanel.style.display = '';
+      document.getElementById('styleLibraryNav').classList.add('active'); document.getElementById('productLibraryNav').classList.remove('active'); window.scrollTo(0,0);
+    });
+    ['productSearch','productSort','productScope'].forEach(id => document.getElementById(id).addEventListener(id === 'productSearch' ? 'input' : 'change',() => { productPage=1; renderProducts(); }));
+    document.getElementById('productPageSize').addEventListener('change',() => { productPage=1; renderProducts(); });
+    document.getElementById('productPrev').addEventListener('click',() => { if(productPage>1){productPage--;renderProducts();} });
+    document.getElementById('productNext').addEventListener('click',() => { productPage++;renderProducts(); });
+    document.getElementById('productSelectAll').addEventListener('change',event => { productTableBody.querySelectorAll('.product-check').forEach(check => check.checked=event.target.checked); updateProductBatchState(); });
+    productTableBody.addEventListener('change',event => { if(event.target.classList.contains('product-check')) updateProductBatchState(); });
+    productTableBody.addEventListener('click',event => {
+      const action = event.target.closest('[data-product-action]'); if(!action) return;
+      const index = Number(action.closest('tr').dataset.productIndex);
+      if(action.dataset.productAction === 'detail') openProductDrawer(index);
+      if(action.dataset.productAction === 'edit') openProductModal(index);
+      if(action.dataset.productAction === 'delete') openDeleteConfirm('确定要删除该机型吗？',`被删除数据 ID：${productData[index].id}。删除后将无法恢复，请谨慎操作。`,() => { productData.splice(index,1); renderProducts(); showToast('机型已删除'); });
+    });
+    document.getElementById('createProduct').addEventListener('click',() => openProductModal());
+    document.getElementById('productImagesInput').addEventListener('change',event => { [...event.target.files].forEach(file => productPendingImages.push(URL.createObjectURL(file))); event.target.value=''; renderProductUploadPreview(); });
+    document.getElementById('productUploadPreview').addEventListener('click',event => { const button=event.target.closest('[data-remove-product-image]'); if(!button)return; productPendingImages.splice(Number(button.dataset.removeProductImage),1); renderProductUploadPreview(); });
+    document.getElementById('saveProduct').addEventListener('click',() => {
+      const name=document.getElementById('productNameInput').value.trim(); if(!name)return showToast('请输入机型名称'); if(!productPendingImages.length)return showToast('请至少上传一张机型图片');
+      const now='2026-06-24 17:20:42';
+      if(productEditingIndex === null) productData.unshift({id:`PRO-2026-${String(productData.length+1).padStart(3,'0')}`,name,images:[...productPendingImages],scope:document.getElementById('productScopeInput').value,creator:'林默',created:now,modifier:'林默',updated:now});
+      else Object.assign(productData[productEditingIndex],{name,images:[...productPendingImages],scope:document.getElementById('productScopeInput').value,modifier:'林默',updated:now});
+      closeOverlays(); productPage=1; renderProducts(); showToast(productEditingIndex === null ? '机型已新增' : '机型已保存');
+    });
+    document.getElementById('editProductFromDetail').addEventListener('click',() => openProductModal(activeProductIndex));
+    document.getElementById('closeProductDrawer').addEventListener('click',closeOverlays);
+    document.getElementById('closeProductModal').addEventListener('click',closeOverlays);
+    document.getElementById('cancelProductModal').addEventListener('click',closeOverlays);
+    document.getElementById('productMoreToggle').addEventListener('click',event => { event.stopPropagation(); const menu=document.getElementById('productMoreMenu'); const open=menu.classList.toggle('open'); event.currentTarget.classList.toggle('open',open); event.currentTarget.setAttribute('aria-expanded',String(open)); });
+    document.getElementById('productImport').addEventListener('click',() => { document.getElementById('productMoreMenu').classList.remove('open'); showToast('请选择机型数据文件进行导入'); });
+    document.getElementById('productExport').addEventListener('click',() => { const rows=filteredProducts().map(({item}) => [item.id,item.name,item.scope==='personal'?'仅自己':'团队可见',item.creator,item.created,item.modifier,item.updated]); downloadCsv(`机型数据导出_${new Date().toISOString().slice(0,10)}.csv`,[['ID','机型名称','可见范围','创建人','创建时间','修改人','最近更新'],...rows]); showToast(`已导出 ${rows.length} 条机型数据`); });
+    document.getElementById('productBatchDelete').addEventListener('click',() => { const indexes=[...productTableBody.querySelectorAll('tr[data-product-index]')].filter(row => row.querySelector('.product-check')?.checked).map(row => Number(row.dataset.productIndex)); if(!indexes.length)return; const ids=indexes.map(index => productData[index].id); openDeleteConfirm(`确定要删除选中的 ${indexes.length} 条数据吗？`,`被删除数据 ID：${ids.join('、')}。删除后将无法恢复，请谨慎操作。`,() => { indexes.sort((a,b)=>b-a).forEach(index => productData.splice(index,1)); renderProducts(); showToast('选中机型已删除'); }); });
+    document.addEventListener('click',event => { if(!event.target.closest('#productMoreWrap')) { document.getElementById('productMoreMenu').classList.remove('open'); document.getElementById('productMoreToggle').classList.remove('open'); } });
+    renderProducts();
+    document.querySelectorAll('.asset-tab').forEach(tab => tab.addEventListener('click', () => {
+      if (tab.dataset.asset !== 'style') {
+        showToast(tab.dataset.asset === 'product' ? '机型图片库页面将在这里切换展示' : '转场库页面将在这里切换展示');
+        return;
+      }
+      document.querySelectorAll('.asset-tab').forEach(item => item.classList.remove('active'));
+      tab.classList.add('active');
+    }));
+    applyFilters();
+  </script>
+  <script>
+    document.getElementById('backExportPage').addEventListener('click', () => {
+      document.querySelectorAll('.data-page').forEach(page => { page.classList.remove('active'); page.setAttribute('aria-hidden','true'); });
+      document.querySelector('.library-panel').style.display = '';
+      window.scrollTo(0, 0);
+    });
+  </script>
+</body>
+</html>
